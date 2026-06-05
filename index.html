@@ -207,7 +207,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;background:#fff;borde
 </div>
 
 <!-- Main App Container -->
-<div id="mainApp" style="display:flex;height:100vh;width:100%;position:relative;">
+<div id="mainApp" style="display:none;height:100vh;width:100%;position:relative;">
 
 <div id="clientArea"><canvas id="canvas"></canvas></div>
 
@@ -350,7 +350,7 @@ function showToolMenu() {
   const app = document.getElementById('mainApp');
   if(menu) menu.style.display = 'flex';
   if(app) app.style.display = 'none';
-  if (!IS_CLIENT && state) sendUpd('gameMode', 'menu');
+  try { if (!IS_CLIENT && state) sendUpd('gameMode', 'menu'); } catch(e) {}
 }
 
 function startEMDRTool() {
@@ -359,7 +359,7 @@ function startEMDRTool() {
   const app = document.getElementById('mainApp');
   if(menu) menu.style.display = 'none';
   if(app) app.style.display = 'flex';
-  if (!IS_CLIENT && state) sendUpd('gameMode', 'emdr');
+  try { if (!IS_CLIENT && state) sendUpd('gameMode', 'emdr'); } catch(e) {}
 }
 
 function updateGameMode(mode) {
