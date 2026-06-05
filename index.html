@@ -380,8 +380,15 @@ function initToolButtons() {
   if (!IS_CLIENT) {
     const startBtn = document.getElementById('startEMDRBtn');
     const backBtn = document.getElementById('backToMenuBtn');
-    if(startBtn) startBtn.addEventListener('click', startEMDRTool);
-    if(backBtn) backBtn.addEventListener('click', showToolMenu);
+    if(startBtn) startBtn.addEventListener('click', ()=>{
+      startEMDRTool();
+      // Sync gameMode via dedicated Firebase key
+      try { sendUpd('gameMode','emdr'); } catch(e) {}
+    });
+    if(backBtn) backBtn.addEventListener('click', ()=>{
+      showToolMenu();
+      try { sendUpd('gameMode','menu'); } catch(e) {}
+    });
     showToolMenu();
   } else {
     // Client: show menu initially, will be updated by therapist
@@ -582,10 +589,11 @@ if (IS_CLIENT) {
     ref.child('frame').on('value', s => { const d=s.val(); if(d){frameX=d.x;frameY=d.y;frameShape=d.shape;} });
     ref.child('state').on('value', s => {
       const d=s.val();
-      if(d) {
-        Object.assign(state,d);
-        if(d.gameMode) updateGameMode(d.gameMode);
-      }
+      if(d) Object.assign(state,d);
+    });
+    ref.child('gameMode').on('value', s => {
+      const m=s.val();
+      if(m) updateGameMode(m);
     });
     ref.child('audio').on('value', s => {
       const d=s.val();
@@ -893,9 +901,11 @@ function updateRandom(W,H,dt) {
 
   // ── Broadcast helpers ─────────────────────────────────────────────────────
   function sendFull() {
-    const msg={type:'fullState',state:{...state}};
+    const s={...state};
+    delete s.gameMode; // gameMode apart gesynchroniseerd
+    const msg={type:'fullState',state:s};
     bc.postMessage(msg);
-    fbSet('state',{...state});
+    fbSet('state',s);
     if(bgImageData) {
       setTimeout(()=>{
         bc.postMessage({type:'bgImage',data:bgImageData});
@@ -906,7 +916,12 @@ function updateRandom(W,H,dt) {
 
   function sendUpd(key,value) {
     bc.postMessage({type:'update',key,value});
-    fbUpd('state',{[key]:value});
+    if(key==='gameMode') {
+      // gameMode apart opslaan, niet in state
+      fbSet('gameMode',value);
+    } else {
+      fbUpd('state',{[key]:value});
+    }
   }
 
   bc.onmessage = e => { if(e.data.type==='requestState') sendFull(); };
