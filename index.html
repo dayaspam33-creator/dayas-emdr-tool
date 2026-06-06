@@ -284,7 +284,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;background:#fff;borde
 
     <div class="tb-sep"></div>
 
-    <button class="btn-pause" id="pauseBtn"></button>
+    <button id="pauseBtn" class="tb-btn" style="background:#34C759;color:#fff;font-size:13px;font-weight:700;min-width:100px;">▶&nbsp;&nbsp;Start</button>
 
     <div class="tb-sep"></div>
 
@@ -344,20 +344,6 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;background:#fff;borde
 
     <!-- Side panel: visuele instellingen -->
     <div id="controls">
-
-      <!-- Session link -->
-      <div id="fbReady" style="display:none;margin-bottom:10px;">
-        <div style="display:flex;align-items:center;gap:5px;margin-bottom:5px;">
-          <div class="fb-dot" id="fbDot"></div>
-          <span style="font-size:10px;color:#34C759;font-weight:500;">Verbonden</span>
-        </div>
-        <div class="fb-link-row">
-          <input class="fb-link-input" type="text" id="sessionLinkInput" readonly style="font-size:9px;">
-          <button class="fb-btn green fb-btn small" id="copyLinkBtn" style="font-size:11px;padding:5px 7px;">📋</button>
-        </div>
-        <button class="fb-btn gray fb-btn small" id="newCodeBtn" style="width:100%;margin-top:5px;font-size:11px;">🔄 Nieuwe link</button>
-      </div>
-      <div id="fbNotReady" style="display:block;font-size:10px;color:#8E8E93;margin-bottom:10px;">Verbinding opzetten...</div>
 
       <!-- Bal kleur -->
       <div class="card-title">Bal Kleur</div>
@@ -455,6 +441,8 @@ function startEMDRTool() {
   if(app) app.style.display = 'flex';
   const footer = document.getElementById('copyrightFooter');
   if(footer) footer.style.display = 'none';
+  // Canvas was 0x0 while mainApp was hidden — force resize
+  setTimeout(()=>{ resizeCanvas(); }, 60);
   try { if (!IS_CLIENT && state) sendUpd('gameMode', 'emdr'); } catch(e) {}
 }
 
@@ -723,7 +711,6 @@ if (IS_CLIENT) {
   function clientLoop() {
     renderBg();
     if(frameX!==null) drawBall(frameX,frameY,R,getBallColor(),frameShape);
-    renderClientTimer();
     requestAnimationFrame(clientLoop);
   }
   clientLoop();
@@ -999,10 +986,24 @@ function updateRandom(W,H,dt) {
   // ── Pause / Start ─────────────────────────────────────────────────────────
   const pauseBtn=document.getElementById('pauseBtn');
   let hasStarted=false;
+  function updatePauseBtn(){
+    if(!hasStarted){
+      pauseBtn.textContent='▶  Start';
+      pauseBtn.style.background='#34C759';
+    } else if(!state.paused){
+      pauseBtn.textContent='⏸  Pauze';
+      pauseBtn.style.background='rgba(255,59,48,.9)';
+    } else {
+      pauseBtn.textContent='▶  Hervat';
+      pauseBtn.style.background='rgba(255,149,0,.95)';
+    }
+  }
+  updatePauseBtn();
   pauseBtn.addEventListener('click',()=>{
     initAudio();
-    if(!hasStarted){hasStarted=true;state.paused=false;pauseBtn.classList.add('running');}
-    else{state.paused=!state.paused;pauseBtn.classList.toggle('running',!state.paused);pauseBtn.classList.toggle('paused',state.paused);}
+    if(!hasStarted){hasStarted=true;state.paused=false;}
+    else{state.paused=!state.paused;}
+    updatePauseBtn();
     sendUpd('paused',state.paused);
   });
 
