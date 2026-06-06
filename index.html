@@ -5,425 +5,302 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Daya's EMDR-tool</title>
 <script>if(new URLSearchParams(location.search).has('client'))document.documentElement.classList.add('client-mode');</script>
+<script src="https://cdn.tailwindcss.com"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{height:100vh;overflow:hidden;}
-body{display:flex;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sans-serif;color:#1C1C1E;}
 
-.client-mode #controls{display:none;}
-.client-mode #topBar{display:none;}
+/* Client mode overrides */
+.client-mode #controls{display:none!important;}
+.client-mode #topBar{display:none!important;}
 .client-mode #mainContent{flex:1;height:100%;}
-.client-mode #zoomSpaceIndicator{display:none;}
-.client-mode #copyrightFooter{display:none !important;}
+.client-mode #zoomSpaceIndicator{display:none!important;}
+.client-mode #copyrightFooter{display:none!important;}
 .client-mode #clientArea{flex:1;width:100%;height:100%;}
-.client-mode #splash{display:none;}
-.client-mode #clientArea::after{display:none;}
-.client-mode #toolMenu{display:none !important;}
-.client-mode #mainApp{display:flex !important;flex-direction:column;}
+.client-mode #splash{display:none!important;}
+.client-mode #toolMenu{display:none!important;}
+.client-mode #mainApp{display:flex!important;flex-direction:column;}
 
-#splash{position:fixed;inset:0;z-index:9999;background:#111;display:flex;align-items:center;justify-content:center;transition:opacity .7s ease;}
-#splash.out{opacity:0;pointer-events:none;}
-.splash-card{text-align:center;color:#fff;padding:52px 56px;background:rgba(255,255,255,.055);border-radius:28px;border:1px solid rgba(255,255,255,.08);}
-.splash-icon{width:76px;height:76px;background:#007AFF;border-radius:20px;margin:0 auto 28px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(0,122,255,.45);}
-.splash-icon::after{content:'';width:36px;height:36px;background:#fff;border-radius:50%;}
-.splash-title{font-size:26px;font-weight:700;letter-spacing:-.5px;margin-bottom:6px;}
-.splash-sub{font-size:14px;color:rgba(255,255,255,.42);margin-bottom:40px;}
-.prog-track{width:200px;height:3px;background:rgba(255,255,255,.1);border-radius:2px;margin:0 auto;overflow:hidden;}
-.prog-fill{height:100%;width:0;background:#007AFF;border-radius:2px;transition:width 2.3s cubic-bezier(.4,0,.2,1);}
-
-#mainApp{display:none;}
-#mainApp #copyrightFooter {
-  font-size:10px;
-  padding:8px 12px;
-  background:rgba(255,255,255,0.5);
-  border:none;
-}
-#startEMDRBtn:hover {
-  background:#007AFF !important;
-  color:#fff !important;
-  transform:scale(1.02);
-}
-#clientArea{flex:1;position:relative;overflow:hidden;background:#000;}
+/* Canvas fills container */
 #clientArea canvas{display:block;width:100%;height:100%;}
-#clientArea::after{content:'';position:absolute;inset:0;border:3px solid rgba(255,255,255,.75);pointer-events:none;z-index:5;}
+#clientArea::after{content:'';position:absolute;inset:0;border:3px solid rgba(255,255,255,.6);pointer-events:none;z-index:5;}
+.client-mode #clientArea::after{display:none;}
 
-#controls{width:360px;height:100vh;overflow-y:auto;background:#F2F2F7;padding:20px 16px 56px;flex-shrink:0;border-left:1px solid rgba(0,0,0,.07);}
-#controls::-webkit-scrollbar{width:5px;}
-#controls::-webkit-scrollbar-track{background:transparent;}
-#controls::-webkit-scrollbar-thumb{background:rgba(0,0,0,.13);border-radius:3px;}
-.panel-title{font-size:22px;font-weight:700;letter-spacing:-.5px;padding:0 4px;}
-.panel-sub{font-size:13px;color:#8E8E93;padding:3px 4px 16px;}
+/* Splash fade */
+#splash.out{opacity:0;pointer-events:none;}
 
-/* Cards */
-.card{background:#fff;border-radius:16px;padding:16px 18px;margin-bottom:14px;box-shadow:0 1px 0 rgba(0,0,0,.04),0 2px 14px rgba(0,0,0,.07);}
-.card-title{font-size:11px;font-weight:600;letter-spacing:.7px;text-transform:uppercase;color:#8E8E93;margin-bottom:14px;}
+/* Range slider */
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:20px;background:transparent;outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:linear-gradient(to right,#3b82f6 var(--fill,40%),rgba(255,255,255,.2) var(--fill,40%));}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#fff;border-radius:50%;box-shadow:0 1px 5px rgba(0,0,0,.4);cursor:grab;margin-top:-7px;}
+input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:#ffffff33;}
+input[type=range]::-moz-range-progress{height:4px;border-radius:2px;background:#3b82f6;}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;background:#fff;border-radius:50%;border:none;box-shadow:0 1px 5px rgba(0,0,0,.4);}
 
-/* Firebase card */
-.fb-status{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
-.fb-dot{width:8px;height:8px;border-radius:50%;background:#34C759;flex-shrink:0;}
-.fb-dot.off{background:#E5E5EA;}
-.fb-code{font-size:18px;font-weight:700;letter-spacing:3px;color:#1C1C1E;}
-.fb-link-row{display:flex;gap:8px;margin-bottom:8px;}
-.fb-link-input{flex:1;padding:8px 10px;border:1px solid #E5E5EA;border-radius:8px;font-size:11px;font-family:monospace;background:#F9F9FB;color:#1C1C1E;min-width:0;}
-.fb-btn{padding:8px 14px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;}
-.fb-btn.green{background:#34C759;color:#fff;}
-.fb-btn.blue{background:#007AFF;color:#fff;}
-.fb-btn.gray{background:#F2F2F7;color:#1C1C1E;font-weight:500;}
-.fb-btn.small{padding:6px 12px;font-size:12px;}
-.fb-row2{display:flex;gap:8px;}
-.fb-textarea{width:100%;height:72px;padding:8px 10px;border:1px solid #E5E5EA;border-radius:8px;font-size:11px;font-family:monospace;resize:none;color:#1C1C1E;background:#F9F9FB;}
-.fb-error{color:#FF3B30;font-size:12px;margin-top:6px;}
-.fb-hint{font-size:12px;color:#8E8E93;margin-bottom:10px;line-height:1.4;}
-
-/* Buttons */
-.btn-pause{width:100%;height:52px;background:#34C759;color:#fff;font-size:17px;font-weight:600;border:none;border-radius:14px;cursor:pointer;transition:background .2s;margin-bottom:10px;display:flex;align-items:center;justify-content:center;}
-.btn-pause::before{content:'▶\00a0\00a0Start';}
-.btn-pause.running{background:#1C1C1E;}
-.btn-pause.running:hover{background:#333;}
-.btn-pause.running::before{content:'⏸\00a0\00a0Pauze';}
-.btn-pause.paused{background:#FF9500;}
-.btn-pause.paused:hover{background:#e08800;}
-.btn-pause.paused::before{content:'▶\00a0\00a0Hervat';}
-
-.btn-zoom{width:100%;height:42px;background:rgba(0,122,255,.1);color:#007AFF;font-size:14px;font-weight:600;border:none;border-radius:12px;cursor:pointer;transition:background .15s;margin-bottom:20px;display:flex;align-items:center;justify-content:center;gap:6px;}
-.btn-zoom:hover{background:rgba(0,122,255,.16);}
-
-/* Slider */
-.slider-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
-.slider-label{font-size:15px;font-weight:500;}
-.slider-val{font-size:15px;font-weight:600;color:#007AFF;font-variant-numeric:tabular-nums;}
-input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:22px;background:transparent;outline:none;cursor:pointer;display:block;}
-input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:linear-gradient(to right,#007AFF var(--fill,40%),#E5E5EA var(--fill,40%));}
-input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:#E5E5EA;}
-input[type=range]::-moz-range-progress{height:4px;border-radius:2px;background:#007AFF;}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;background:#fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.22);cursor:grab;margin-top:-10px;}
-input[type=range]::-moz-range-thumb{width:24px;height:24px;background:#fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.22);border:none;cursor:grab;}
-.slider-ends{display:flex;justify-content:space-between;font-size:11px;color:#AEAEB2;margin-top:4px;}
-
-/* Swatches */
-.swatches{display:flex;gap:9px;flex-wrap:wrap;}
-#ballSwatches{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
-#bgSwatches{display:flex;gap:9px;flex-wrap:wrap;}
-#bgSwatches .swatch{box-shadow:0 0 0 1.5px rgba(0,0,0,.25),0 1px 4px rgba(0,0,0,.15);}
-#bgSwatches .swatch.selected{box-shadow:0 0 0 2.5px #fff,0 0 0 5px #007AFF;}
-.swatch{width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;outline:none;position:relative;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.2);transition:transform .15s,box-shadow .15s;}
+/* Swatch states */
+.swatch{transition:transform .15s;}
 .swatch:hover:not(.conflict){transform:scale(1.12);}
-.swatch.selected{box-shadow:0 0 0 2.5px #fff,0 0 0 5px #007AFF;}
-.swatch.conflict{opacity:.25;cursor:not-allowed;filter:grayscale(.4);}
+.swatch.selected{box-shadow:0 0 0 2.5px #fff,0 0 0 5px #3b82f6!important;}
+.swatch.conflict{opacity:.25;cursor:not-allowed;}
 .swatch.conflict::after{content:'×';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.85);font-size:18px;font-weight:700;}
 
-/* Toggle */
-.ios-toggle{cursor:pointer;flex-shrink:0;}
-.ios-toggle input{display:none;}
-.toggle-track{width:51px;height:31px;background:#E5E5EA;border-radius:15.5px;position:relative;display:block;transition:background .28s;}
-.ios-toggle input:checked+.toggle-track{background:#34C759;}
-.toggle-thumb{position:absolute;width:27px;height:27px;background:#fff;border-radius:50%;top:2px;left:2px;box-shadow:0 2px 6px rgba(0,0,0,.22);transition:transform .28s cubic-bezier(.4,0,.2,1);}
-.ios-toggle input:checked+.toggle-track .toggle-thumb{transform:translateX(20px);}
-
-/* Row */
-.row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:2px 0;}
-.row+.row{margin-top:14px;}
-.row-text{flex:1;min-width:0;}
-.row-label{font-size:14px;font-weight:500;}
-.row-sub{font-size:12px;color:#8E8E93;margin-top:2px;}
-.divider{border:none;border-top:1px solid #F2F2F7;margin:14px 0;}
-
-/* Color picker */
-.picker-row{display:flex;align-items:center;gap:10px;margin-top:12px;}
-.picker-label{font-size:13px;color:#8E8E93;flex:1;}
-.cpick-wrap{width:34px;height:34px;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.2);overflow:hidden;position:relative;flex-shrink:0;cursor:pointer;}
-.cpick-wrap input[type=color]{position:absolute;inset:-6px;width:calc(100% + 12px);height:calc(100% + 12px);opacity:0;cursor:pointer;border:none;}
-
-/* Preset photos */
-.preset-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
-.preset-btn{position:relative;height:60px;border-radius:10px;overflow:hidden;border:none;cursor:pointer;background:#E5E5EA;transition:transform .15s,box-shadow .15s;padding:0;}
+/* Preset photo btn */
+.preset-btn{transition:transform .15s,box-shadow .15s;}
 .preset-btn:hover{transform:scale(1.03);}
-.preset-btn.selected{box-shadow:0 0 0 3px #007AFF;}
-.preset-btn img{width:100%;height:100%;object-fit:cover;display:block;}
-.preset-btn .preset-icon{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;background:#E5E5EA;}
-.preset-btn .preset-label{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.45);color:#fff;font-size:11px;font-weight:500;padding:3px 6px;text-align:center;font-family:inherit;}
+.preset-btn.selected{box-shadow:0 0 0 3px #3b82f6!important;}
 
-/* Upload */
-.img-row{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap;}
-.btn-file{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#F2F2F7;color:#1C1C1E;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer;border:1px solid rgba(0,0,0,.1);transition:background .15s;font-family:inherit;}
-.btn-file:hover{background:#E5E5EA;}
-.btn-img-remove{font-size:13px;color:#FF3B30;background:none;border:none;cursor:pointer;font-family:inherit;padding:0;}
-.img-preview{width:48px;height:34px;border-radius:6px;object-fit:cover;box-shadow:0 1px 4px rgba(0,0,0,.2);flex-shrink:0;display:none;}
-
-/* ── NEW LAYOUT ── */
-#mainApp{flex-direction:column;}
-
-/* Top bar */
-#topBar{height:66px;background:#1C1C1E;display:flex;align-items:center;gap:7px;padding:0 12px;flex-shrink:0;overflow-x:auto;}
-#topBar::-webkit-scrollbar{display:none;}
-#mainContent{flex:1;display:flex;overflow:hidden;}
-
-.tb-sep{width:1px;height:26px;background:rgba(255,255,255,.14);flex-shrink:0;margin:0 2px;}
-.tb-group{display:flex;align-items:center;gap:5px;flex-shrink:0;}
-.tb-lbl{font-size:11px;color:rgba(255,255,255,.4);white-space:nowrap;}
-
-.tb-btn{height:32px;padding:0 11px;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;background:rgba(255,255,255,.11);color:#fff;white-space:nowrap;flex-shrink:0;transition:background .15s;}
-.tb-btn:hover{background:rgba(255,255,255,.2);}
-.tb-btn-red{background:rgba(255,59,48,.85);}
-.tb-btn-red:hover{background:rgba(255,59,48,1);}
-.tb-btn-blue{background:#007AFF;}
-.tb-btn-blue:hover{background:#0066d6;}
-
-.tb-select{height:32px;padding:0 7px;border:none;border-radius:7px;font-size:12px;background:rgba(255,255,255,.11);color:#fff;font-family:inherit;cursor:pointer;flex-shrink:0;outline:none;}
-.tb-select option{background:#1C1C1E;color:#fff;}
-
-.tb-slider{width:86px;height:18px;}
-#topBar input[type=range]::-webkit-slider-runnable-track{height:3px;border-radius:2px;background:linear-gradient(to right,#007AFF var(--fill,40%),rgba(255,255,255,.18) var(--fill,40%));}
-#topBar input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#fff;border-radius:50%;box-shadow:0 1px 5px rgba(0,0,0,.35);cursor:grab;margin-top:-7.5px;}
-#topBar .slider-val{font-size:12px;color:#007AFF;min-width:28px;}
-
-.tb-toggles{display:flex;gap:3px;flex-shrink:0;}
-.tb-tog{display:flex;align-items:center;cursor:pointer;}
-.tb-tog input[type=checkbox]{display:none;}
-.tb-tog span{display:inline-flex;align-items:center;gap:3px;padding:5px 8px;background:rgba(255,255,255,.09);border-radius:6px;font-size:11px;font-weight:500;color:rgba(255,255,255,.45);white-space:nowrap;transition:background .18s,color .18s;font-family:inherit;}
-.tb-tog input:checked+span{background:rgba(52,199,89,.8);color:#fff;}
-
-.tb-num{width:36px;padding:4px 3px;border:1px solid rgba(255,255,255,.16);border-radius:5px;font-size:12px;text-align:center;background:rgba(255,255,255,.07);color:#fff;font-family:inherit;outline:none;}
-
-#topBar .btn-pause{width:auto;height:32px;padding:0 13px;margin-bottom:0;border-radius:7px;font-size:12px;flex-shrink:0;}
-#topBar .btn-pause.running{background:rgba(255,59,48,.85);}
-#topBar .btn-pause.running:hover{background:rgba(255,59,48,1);}
-#topBar .btn-pause.paused{background:rgba(255,149,0,.9);}
-#topBar .btn-pause.paused:hover{background:rgba(255,149,0,1);}
-#topBar #timerDisplay{font-size:14px;font-weight:700;color:#007AFF;min-width:38px;text-align:center;}
-
-/* Zoom space indicator in canvas */
-#zoomSpaceIndicator{position:absolute;bottom:10px;left:10px;width:256px;height:176px;border:2px dashed rgba(255,255,255,.18);border-radius:10px;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:4;}
-#zoomSpaceBox{display:flex;flex-direction:column;align-items:center;gap:4px;color:rgba(255,255,255,.18);font-size:11px;font-weight:500;text-align:center;line-height:1.4;}
-
-/* Compact side panel */
-#controls{width:212px !important;height:100%;overflow-y:auto;background:#F2F2F7;padding:10px 10px 14px;flex-shrink:0;border-left:1px solid rgba(0,0,0,.07);}
-#controls::-webkit-scrollbar{width:3px;}
-#controls::-webkit-scrollbar-thumb{background:rgba(0,0,0,.12);border-radius:2px;}
-#controls .card-title{font-size:10px;margin-bottom:8px;}
-#controls .swatch{width:26px;height:26px;}
-#controls #ballSwatches{grid-template-columns:repeat(4,1fr);gap:5px;}
-#controls #bgSwatches{gap:5px;}
-#controls .divider{margin:8px 0;}
-#controls .preset-btn{height:44px;border-radius:7px;}
-#controls .preset-grid{gap:5px;margin-top:6px;}
-#controls .picker-row{margin-top:8px;}
-#controls .img-row{margin-top:6px;}
-#controls .btn-file{font-size:11px;padding:5px 8px;}
-#controls .btn-zoom{height:34px;font-size:12px;margin-bottom:0;}
+/* Toggle pill (checkbox hidden, label styled via peer) */
+.tog-label{cursor:pointer;}
+.tog-label input[type=checkbox]{display:none;}
+.tog-label input:checked + span{background:rgba(52,199,89,.85);color:#fff;}
 </style>
 </head>
-<body>
+<body class="flex font-sans text-zinc-900" style="height:100vh;">
 
-<div id="splash">
-  <div class="splash-card">
-    <div class="splash-icon"></div>
-    <div class="splash-title">Daya's EMDR-tool</div>
-    <div class="splash-sub">Professional EMDR Aid</div>
-    <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+<!-- ── Splash ── -->
+<div id="splash" class="fixed inset-0 z-[9999] bg-zinc-950 flex items-center justify-center transition-opacity duration-700">
+  <div class="text-center text-white px-14 py-12 bg-white/5 rounded-3xl border border-white/10">
+    <div class="w-20 h-20 bg-blue-500 rounded-2xl mx-auto mb-7 flex items-center justify-center shadow-[0_8px_32px_rgba(59,130,246,.5)]">
+      <div class="w-9 h-9 bg-white rounded-full"></div>
+    </div>
+    <div class="text-2xl font-bold tracking-tight mb-1">Daya's EMDR-tool</div>
+    <div class="text-sm text-white/40 mb-10">Professional EMDR Aid</div>
+    <div class="w-48 h-0.5 bg-white/10 rounded-full mx-auto overflow-hidden">
+      <div class="h-full w-0 bg-blue-500 rounded-full transition-[width] duration-[2.3s] ease-[cubic-bezier(.4,0,.2,1)]" id="progFill"></div>
+    </div>
   </div>
 </div>
 
-<!-- Copyright Footer -->
-<div id="copyrightFooter" style="position:fixed;bottom:0;left:0;right:0;padding:16px 20px;text-align:center;font-size:12px;color:#8E8E93;background:rgba(255,255,255,0.9);border-top:1px solid rgba(0,0,0,0.05);z-index:100;">
+<!-- ── Copyright ── -->
+<div id="copyrightFooter" class="fixed bottom-0 left-0 right-0 text-center text-xs text-zinc-400 py-3 bg-white/90 border-t border-black/5 z-50">
   © 2026 Daya Vaassen — All rights reserved
 </div>
 
-<!-- Tool Selection Menu -->
-<div id="toolMenu" style="display:flex;flex-direction:column;align-items:center;justify-content:center;position:fixed;inset:0;z-index:1000;background:#F2F2F7;padding:60px 20px 100px;overflow-y:auto;">
-  <div style="max-width:600px;margin:0 auto;text-align:center;">
-    <h1 style="font-size:56px;font-weight:700;margin-bottom:12px;color:#1C1C1E;">Daya's EMDR Tool</h1>
-    <p style="font-size:18px;color:#8E8E93;margin-bottom:40px;">Selecteer Tool</p>
+<!-- ── Tool Menu ── -->
+<div id="toolMenu" class="fixed inset-0 z-[1000] bg-zinc-100 flex flex-col items-center justify-center px-5 overflow-y-auto" style="padding-top:60px;padding-bottom:100px;">
+  <div class="w-full max-w-lg text-center">
+    <h1 class="text-5xl font-bold tracking-tight mb-3 text-zinc-900">Daya's EMDR Tool</h1>
+    <p class="text-lg text-zinc-400 mb-10">Selecteer Tool</p>
 
-    <!-- Client Verbinding -->
-    <div style="background:#fff;border-radius:16px;padding:20px 24px;margin-bottom:32px;box-shadow:0 1px 0 rgba(0,0,0,.04),0 2px 14px rgba(0,0,0,.07);text-align:left;">
-      <div style="font-size:11px;font-weight:600;letter-spacing:.7px;text-transform:uppercase;color:#8E8E93;margin-bottom:14px;">Client Verbinding</div>
-
+    <!-- Client link card -->
+    <div class="bg-white rounded-2xl p-5 mb-8 shadow-sm text-left">
+      <div class="text-[11px] font-semibold uppercase tracking-widest text-zinc-400 mb-3">Client Verbinding</div>
       <div id="fbReady" style="display:none;">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;">
-          <div class="fb-dot" id="fbDot"></div>
-          <span style="font-size:13px;color:#34C759;font-weight:500;">Verbonden</span>
+        <div class="flex items-center gap-2 mb-3">
+          <div class="w-2 h-2 rounded-full bg-green-500" id="fbDot"></div>
+          <span class="text-sm text-green-600 font-medium">Verbonden</span>
         </div>
-        <div class="fb-link-row">
-          <input class="fb-link-input" type="text" id="sessionLinkInput" readonly style="font-size:10px;">
-          <button class="fb-btn green fb-btn small" id="copyLinkBtn">Kopieer</button>
+        <div class="flex gap-2 mb-2">
+          <input type="text" id="sessionLinkInput" readonly class="flex-1 text-[10px] font-mono px-2.5 py-2 rounded-lg bg-zinc-50 border border-zinc-200 text-zinc-700 min-w-0">
+          <button id="copyLinkBtn" class="px-3 py-2 rounded-lg text-xs font-semibold text-white bg-green-500 hover:bg-green-600 transition-colors whitespace-nowrap">Kopieer</button>
         </div>
-        <button class="fb-btn gray fb-btn small" id="newCodeBtn" style="width:100%;margin-top:8px;">🔄 Nieuwe link</button>
+        <button id="newCodeBtn" class="w-full py-2 rounded-lg text-xs font-medium text-zinc-600 bg-zinc-100 hover:bg-zinc-200 transition-colors">🔄 Nieuwe link</button>
       </div>
-
-      <div id="fbNotReady" style="display:block;">
-        <div style="font-size:13px;color:#8E8E93;">Verbinding opzetten...</div>
-      </div>
+      <div id="fbNotReady" class="text-sm text-zinc-400">Verbinding opzetten...</div>
     </div>
 
-    <!-- Tool Cards -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
-      <button id="startEMDRBtn" onclick="document.getElementById('toolMenu').style.display='none';document.getElementById('mainApp').style.display='flex';" style="padding:40px 20px;background:#fff;border:2px solid #007AFF;border-radius:16px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:12px;font-family:inherit;">
-        <div style="font-size:18px;font-weight:700;color:#1C1C1E;">EMDR Tool</div>
-        <div style="font-size:13px;color:#8E8E93;">Bilaterale stimulatie</div>
-        <div style="font-size:14px;font-weight:600;color:#007AFF;margin-top:8px;">Starten</div>
+    <!-- Tool cards -->
+    <div class="grid grid-cols-2 gap-5">
+      <button id="startEMDRBtn"
+        onclick="document.getElementById('toolMenu').style.display='none';document.getElementById('mainApp').style.display='flex';document.getElementById('copyrightFooter').style.display='none';"
+        class="p-10 bg-white border-2 border-blue-500 rounded-2xl cursor-pointer flex flex-col items-center gap-3 hover:bg-blue-500 hover:text-white transition-all group">
+        <div class="text-lg font-bold text-zinc-900 group-hover:text-white">EMDR Tool</div>
+        <div class="text-sm text-zinc-400 group-hover:text-blue-100">Bilaterale stimulatie</div>
+        <div class="text-sm font-semibold text-blue-500 group-hover:text-white mt-2">Starten →</div>
       </button>
-
-      <div style="padding:40px 20px;background:#E5E5EA;border-radius:16px;display:flex;flex-direction:column;align-items:center;gap:12px;opacity:0.5;">
-        <div style="font-size:18px;font-weight:700;color:#1C1C1E;">Stroop Test</div>
-        <div style="font-size:13px;color:#8E8E93;">Komt binnenkort</div>
+      <div class="p-10 bg-zinc-200 rounded-2xl flex flex-col items-center gap-3 opacity-40">
+        <div class="text-lg font-bold">Stroop Test</div>
+        <div class="text-sm text-zinc-500">Komt binnenkort</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Main App Container -->
-<div id="mainApp" style="display:none;height:100vh;width:100%;">
+<!-- ── Main App ── -->
+<div id="mainApp" style="display:none;height:100vh;width:100%;flex-direction:column;">
 
-  <!-- ── Top Bar ── -->
-  <div id="topBar">
+  <!-- Top bar -->
+  <div id="topBar" class="flex items-center gap-2 px-3 bg-zinc-900 shrink-0 overflow-x-auto" style="height:66px;scrollbar-width:none;">
 
-    <button id="backToMenuBtn" class="tb-btn tb-btn-red" onclick="document.getElementById('toolMenu').style.display='flex';document.getElementById('mainApp').style.display='none';document.getElementById('copyrightFooter').style.display='';">← Menu</button>
+    <button id="backToMenuBtn"
+      onclick="document.getElementById('toolMenu').style.display='flex';document.getElementById('mainApp').style.display='none';document.getElementById('copyrightFooter').style.display='';"
+      class="px-3 h-8 rounded-lg text-xs font-bold text-white bg-red-500 hover:bg-red-600 shrink-0 whitespace-nowrap transition-colors">← Menu</button>
 
-    <div class="tb-sep"></div>
+    <div class="w-px h-7 bg-white/15 shrink-0 mx-1"></div>
 
-    <button id="pauseBtn" class="tb-btn" style="background:#34C759;color:#fff;font-size:13px;font-weight:700;min-width:100px;">▶&nbsp;&nbsp;Start</button>
+    <button id="pauseBtn" class="h-8 px-4 rounded-lg text-xs font-bold text-white shrink-0 whitespace-nowrap transition-colors" style="background:#22c55e;min-width:96px;">▶  Start</button>
 
-    <div class="tb-sep"></div>
+    <div class="w-px h-7 bg-white/15 shrink-0 mx-1"></div>
 
-    <div class="tb-group">
-      <span class="tb-lbl">Snelheid</span>
-      <input type="range" id="speedSlider" min="1" max="25" value="10" class="tb-slider">
-      <span class="slider-val" id="speedLabel">40%</span>
+    <!-- Speed -->
+    <div class="flex items-center gap-2 shrink-0">
+      <span class="text-[11px] text-white/40 whitespace-nowrap">Snelheid</span>
+      <input type="range" id="speedSlider" min="1" max="25" value="10" class="w-24">
+      <span id="speedLabel" class="text-xs font-semibold text-blue-400 min-w-[30px]">40%</span>
     </div>
 
-    <div class="tb-sep"></div>
+    <div class="w-px h-7 bg-white/15 shrink-0 mx-1"></div>
 
-    <select id="movementMode" class="tb-select">
+    <select id="movementMode" class="h-8 px-2 rounded-lg text-xs bg-white/10 text-white border-0 shrink-0 outline-none cursor-pointer">
       <option value="horizontal">↔ Horizontaal</option>
       <option value="vertical">↕ Verticaal</option>
       <option value="random">🎲 Willekeurig</option>
     </select>
 
-    <div class="tb-sep"></div>
+    <div class="w-px h-7 bg-white/15 shrink-0 mx-1"></div>
 
-    <div class="tb-toggles">
-      <label class="tb-tog"><input type="checkbox" id="audioToggle"><span>🔊 Audio</span></label>
-      <label class="tb-tog"><input type="checkbox" id="shapeToggle"><span>⬡ Vorm</span></label>
-      <label class="tb-tog"><input type="checkbox" id="colorChangingToggle"><span>🎨 Kleur</span></label>
-      <label class="tb-tog"><input type="checkbox" id="randomToggle"><span>🎲 Random</span></label>
+    <!-- Toggles -->
+    <div class="flex gap-1 shrink-0">
+      <label class="tog-label">
+        <input type="checkbox" id="audioToggle">
+        <span class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-white/10 text-white/50 whitespace-nowrap transition-colors">🔊 Audio</span>
+      </label>
+      <label class="tog-label">
+        <input type="checkbox" id="shapeToggle">
+        <span class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-white/10 text-white/50 whitespace-nowrap transition-colors">⬡ Vorm</span>
+      </label>
+      <label class="tog-label">
+        <input type="checkbox" id="colorChangingToggle">
+        <span class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-white/10 text-white/50 whitespace-nowrap transition-colors">🎨 Kleur</span>
+      </label>
+      <label class="tog-label">
+        <input type="checkbox" id="randomToggle">
+        <span class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-white/10 text-white/50 whitespace-nowrap transition-colors">🎲 Random</span>
+      </label>
     </div>
 
-    <div class="tb-sep"></div>
+    <div class="w-px h-7 bg-white/15 shrink-0 mx-1"></div>
 
-    <div class="tb-group">
-      <span class="tb-lbl">Timer</span>
-      <input type="number" id="timerMinutes" min="0" max="60" value="0" class="tb-num">
-      <span class="tb-lbl">m</span>
-      <input type="number" id="timerSeconds" min="0" max="59" value="0" class="tb-num">
-      <span class="tb-lbl">s</span>
-      <button id="timerStartBtn" class="tb-btn tb-btn-blue">▶</button>
-      <button id="timerStopBtn" class="tb-btn">■</button>
-      <div id="timerDisplay" style="display:none;">00:00</div>
+    <!-- Timer -->
+    <div class="flex items-center gap-1.5 shrink-0">
+      <span class="text-[11px] text-white/40">Timer</span>
+      <input type="number" id="timerMinutes" min="0" max="60" value="0" class="w-10 text-center text-xs text-white bg-white/10 border border-white/20 rounded-md py-1 outline-none">
+      <span class="text-[11px] text-white/40">m</span>
+      <input type="number" id="timerSeconds" min="0" max="59" value="0" class="w-10 text-center text-xs text-white bg-white/10 border border-white/20 rounded-md py-1 outline-none">
+      <span class="text-[11px] text-white/40">s</span>
+      <button id="timerStartBtn" class="px-2.5 py-1 rounded-md text-xs font-semibold text-white bg-blue-500 hover:bg-blue-600 transition-colors">▶</button>
+      <button id="timerStopBtn" class="px-2.5 py-1 rounded-md text-xs font-semibold text-white bg-white/15 hover:bg-white/25 transition-colors">■</button>
+      <div id="timerDisplay" class="text-sm font-bold text-blue-400 min-w-[40px] text-center" style="display:none;">00:00</div>
     </div>
 
   </div>
 
-  <!-- ── Main Content ── -->
-  <div id="mainContent">
+  <!-- Main content -->
+  <div id="mainContent" class="flex flex-1 overflow-hidden">
 
-    <!-- Canvas area (client view) -->
-    <div id="clientArea">
+    <!-- Canvas -->
+    <div id="clientArea" class="flex-1 relative overflow-hidden bg-black">
       <canvas id="canvas"></canvas>
-      <!-- Zoom venster ruimte indicator -->
-      <div id="zoomSpaceIndicator">
-        <div id="zoomSpaceBox">
-          <span style="font-size:22px;">📹</span>
-          <span>Zoom venster</span>
-          <span style="font-size:9px;opacity:.75;">Zet hier het Zoom<br>camera venster neer</span>
+      <div id="zoomSpaceIndicator" class="absolute bottom-3 left-3 w-64 h-44 rounded-2xl border-2 border-dashed border-white/20 flex items-center justify-center pointer-events-none">
+        <div class="flex flex-col items-center gap-1 text-white/20 text-center">
+          <span class="text-3xl">📹</span>
+          <span class="text-xs font-medium">Zoom venster</span>
+          <span class="text-[10px] opacity-75 leading-snug">Zet hier het Zoom<br>camera venster neer</span>
         </div>
       </div>
     </div>
 
-    <!-- Side panel: visuele instellingen -->
-    <div id="controls">
+    <!-- Side panel -->
+    <div id="controls" class="w-52 shrink-0 bg-zinc-100 border-l border-black/10 overflow-y-auto p-3 flex flex-col gap-0">
 
-      <!-- Bal kleur -->
-      <div class="card-title">Bal Kleur</div>
-      <div class="swatches" id="ballSwatches">
-        <button class="swatch" data-color="#007AFF" style="background:#007AFF"></button>
-        <button class="swatch selected" data-color="#FFFFFF" style="background:#FFFFFF;border:2px solid #ddd"></button>
-        <button class="swatch" data-color="#34C759" style="background:#34C759"></button>
-        <button class="swatch" data-color="#FF3B30" style="background:#FF3B30"></button>
-        <button class="swatch" data-color="#FFCC00" style="background:#FFCC00"></button>
-        <button class="swatch" data-color="#AF52DE" style="background:#AF52DE"></button>
-        <button class="swatch" data-color="#FF9500" style="background:#FF9500"></button>
-        <button class="swatch" data-color="#5AC8FA" style="background:#5AC8FA"></button>
+      <!-- Session link -->
+      <div id="fbReady2" style="display:none;" class="mb-3">
+        <div class="flex items-center gap-1.5 mb-1.5">
+          <div class="w-2 h-2 rounded-full bg-green-500"></div>
+          <span class="text-[10px] font-medium text-green-600">Verbonden</span>
+        </div>
+        <div class="flex gap-1 mb-1">
+          <input type="text" id="sessionLinkInput2" readonly class="flex-1 text-[9px] font-mono px-2 py-1 rounded-md bg-white border border-zinc-200 min-w-0 text-zinc-700">
+          <button id="copyLinkBtn2" class="px-2 py-1 rounded-md text-[11px] font-semibold text-white bg-green-500 hover:bg-green-600 transition-colors">📋</button>
+        </div>
+        <button id="newCodeBtn2" class="w-full py-1 rounded-md text-[11px] font-medium text-zinc-600 bg-zinc-200 hover:bg-zinc-300 transition-colors">🔄 Nieuwe link</button>
       </div>
 
-      <hr class="divider">
-
-      <!-- Achtergrond kleur -->
-      <div class="card-title">Achtergrond Kleur</div>
-      <div class="swatches" id="bgSwatches">
-        <button class="swatch selected" data-color="#000000" style="background:#000000" title="Zwart"></button>
-        <button class="swatch" data-color="#2C2C2E" style="background:#2C2C2E" title="Grijs"></button>
-        <button class="swatch" data-color="#1A1A6E" style="background:#1A1A6E" title="Blauw"></button>
-        <button class="swatch" data-color="#1A4A1A" style="background:#1A4A1A" title="Groen"></button>
-        <button class="swatch" data-color="#4A1A1A" style="background:#4A1A1A" title="Rood"></button>
-      </div>
-      <div class="picker-row">
-        <span class="picker-label" style="font-size:11px;">Eigen kleur</span>
-        <div class="cpick-wrap" id="bgPickWrap" style="background:#000000;width:26px;height:26px;"><input type="color" id="bgPicker" value="#000000"></div>
+      <!-- Ball color -->
+      <div class="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 mb-2">Bal Kleur</div>
+      <div class="grid grid-cols-4 gap-1.5 mb-3" id="ballSwatches">
+        <button class="swatch relative w-7 h-7 rounded-full border-0 cursor-pointer shadow-sm" data-color="#007AFF" style="background:#007AFF"></button>
+        <button class="swatch selected relative w-7 h-7 rounded-full cursor-pointer shadow-sm" data-color="#FFFFFF" style="background:#FFFFFF;border:1.5px solid #ddd"></button>
+        <button class="swatch relative w-7 h-7 rounded-full border-0 cursor-pointer shadow-sm" data-color="#34C759" style="background:#34C759"></button>
+        <button class="swatch relative w-7 h-7 rounded-full border-0 cursor-pointer shadow-sm" data-color="#FF3B30" style="background:#FF3B30"></button>
+        <button class="swatch relative w-7 h-7 rounded-full border-0 cursor-pointer shadow-sm" data-color="#FFCC00" style="background:#FFCC00"></button>
+        <button class="swatch relative w-7 h-7 rounded-full border-0 cursor-pointer shadow-sm" data-color="#AF52DE" style="background:#AF52DE"></button>
+        <button class="swatch relative w-7 h-7 rounded-full border-0 cursor-pointer shadow-sm" data-color="#FF9500" style="background:#FF9500"></button>
+        <button class="swatch relative w-7 h-7 rounded-full border-0 cursor-pointer shadow-sm" data-color="#5AC8FA" style="background:#5AC8FA"></button>
       </div>
 
-      <hr class="divider">
+      <hr class="border-zinc-200 mb-3">
 
-      <!-- Achtergrond foto's -->
-      <div class="card-title">Achtergrond Foto</div>
-      <div class="preset-grid" id="presetGrid">
-        <button class="preset-btn" data-file="bg-savanne.webp">
-          <div class="preset-icon" id="icon-savanne">🌅</div>
-          <img src="bg-savanne.webp" onload="document.getElementById('icon-savanne').style.display='none'" onerror="this.style.display='none'">
-          <span class="preset-label">Savanne</span>
+      <!-- BG color -->
+      <div class="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 mb-2">Achtergrond</div>
+      <div class="flex flex-wrap gap-1.5 mb-2" id="bgSwatches">
+        <button class="swatch selected relative w-7 h-7 rounded-full border-0 cursor-pointer shadow-sm" data-color="#000000" style="background:#000000" title="Zwart"></button>
+        <button class="swatch relative w-7 h-7 rounded-full border-0 cursor-pointer shadow-sm" data-color="#2C2C2E" style="background:#2C2C2E" title="Grijs"></button>
+        <button class="swatch relative w-7 h-7 rounded-full border-0 cursor-pointer shadow-sm" data-color="#1A1A6E" style="background:#1A1A6E" title="Blauw"></button>
+        <button class="swatch relative w-7 h-7 rounded-full border-0 cursor-pointer shadow-sm" data-color="#1A4A1A" style="background:#1A4A1A" title="Groen"></button>
+        <button class="swatch relative w-7 h-7 rounded-full border-0 cursor-pointer shadow-sm" data-color="#4A1A1A" style="background:#4A1A1A" title="Rood"></button>
+      </div>
+      <div class="flex items-center gap-2 mb-3">
+        <span class="text-[11px] text-zinc-400 flex-1">Eigen kleur</span>
+        <div class="w-7 h-7 rounded-full shadow overflow-hidden relative cursor-pointer" id="bgPickWrap" style="background:#000000">
+          <input type="color" id="bgPicker" value="#000000" class="absolute opacity-0 cursor-pointer" style="inset:-6px;width:calc(100% + 12px);height:calc(100% + 12px);">
+        </div>
+      </div>
+
+      <hr class="border-zinc-200 mb-3">
+
+      <!-- BG photos -->
+      <div class="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 mb-2">Foto</div>
+      <div class="grid grid-cols-2 gap-1.5 mb-2" id="presetGrid">
+        <button class="preset-btn relative h-12 rounded-xl overflow-hidden border-0 cursor-pointer p-0 bg-zinc-200" data-file="bg-savanne.webp">
+          <div class="preset-icon absolute inset-0 flex items-center justify-center text-xl bg-zinc-200" id="icon-savanne">🌅</div>
+          <img src="bg-savanne.webp" class="w-full h-full object-cover block" onload="document.getElementById('icon-savanne').style.display='none'" onerror="this.style.display='none'">
+          <span class="preset-label absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[9px] font-medium py-0.5 text-center">Savanne</span>
         </button>
-        <button class="preset-btn" data-file="bg-bos.webp">
-          <div class="preset-icon" id="icon-bos">🌲</div>
-          <img src="bg-bos.webp" onload="document.getElementById('icon-bos').style.display='none'" onerror="this.style.display='none'">
-          <span class="preset-label">Bos</span>
+        <button class="preset-btn relative h-12 rounded-xl overflow-hidden border-0 cursor-pointer p-0 bg-zinc-200" data-file="bg-bos.webp">
+          <div class="preset-icon absolute inset-0 flex items-center justify-center text-xl bg-zinc-200" id="icon-bos">🌲</div>
+          <img src="bg-bos.webp" class="w-full h-full object-cover block" onload="document.getElementById('icon-bos').style.display='none'" onerror="this.style.display='none'">
+          <span class="preset-label absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[9px] font-medium py-0.5 text-center">Bos</span>
         </button>
-        <button class="preset-btn" data-file="bg-wolken.webp">
-          <div class="preset-icon" id="icon-wolken">☁️</div>
-          <img src="bg-wolken.webp" onload="document.getElementById('icon-wolken').style.display='none'" onerror="this.style.display='none'">
-          <span class="preset-label">Wolken</span>
+        <button class="preset-btn relative h-12 rounded-xl overflow-hidden border-0 cursor-pointer p-0 bg-zinc-200" data-file="bg-wolken.webp">
+          <div class="preset-icon absolute inset-0 flex items-center justify-center text-xl bg-zinc-200" id="icon-wolken">☁️</div>
+          <img src="bg-wolken.webp" class="w-full h-full object-cover block" onload="document.getElementById('icon-wolken').style.display='none'" onerror="this.style.display='none'">
+          <span class="preset-label absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[9px] font-medium py-0.5 text-center">Wolken</span>
         </button>
-        <button class="preset-btn" data-file="bg-bergen.webp">
-          <div class="preset-icon" id="icon-bergen">⛰️</div>
-          <img src="bg-bergen.webp" onload="document.getElementById('icon-bergen').style.display='none'" onerror="this.style.display='none'">
-          <span class="preset-label">Bergen</span>
+        <button class="preset-btn relative h-12 rounded-xl overflow-hidden border-0 cursor-pointer p-0 bg-zinc-200" data-file="bg-bergen.webp">
+          <div class="preset-icon absolute inset-0 flex items-center justify-center text-xl bg-zinc-200" id="icon-bergen">⛰️</div>
+          <img src="bg-bergen.webp" class="w-full h-full object-cover block" onload="document.getElementById('icon-bergen').style.display='none'" onerror="this.style.display='none'">
+          <span class="preset-label absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[9px] font-medium py-0.5 text-center">Bergen</span>
         </button>
       </div>
-      <div class="img-row">
-        <label class="btn-file">📁 Foto laden<input type="file" id="bgImgInput" accept="image/*" style="display:none"></label>
-        <img id="imgPreview" class="img-preview" alt="">
-        <button class="btn-img-remove" id="removeBgImg" style="display:none">✕</button>
+
+      <div class="flex items-center gap-2 mb-3 flex-wrap">
+        <label class="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-zinc-200 hover:bg-zinc-300 rounded-lg text-[11px] font-medium text-zinc-700 cursor-pointer transition-colors">
+          📁 Foto laden
+          <input type="file" id="bgImgInput" accept="image/*" class="hidden">
+        </label>
+        <img id="imgPreview" class="w-12 h-8 rounded-lg object-cover shadow" style="display:none;" alt="">
+        <button id="removeBgImg" class="text-[11px] text-red-500 bg-transparent border-0 cursor-pointer" style="display:none;">✕</button>
       </div>
 
-      <hr class="divider">
+      <hr class="border-zinc-200 mb-3">
 
-      <button class="btn-zoom" id="zoomBtn">↗ Nieuw venster</button>
+      <button id="zoomBtn" class="w-full py-2 rounded-xl text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors">↗ Nieuw venster</button>
 
     </div>
-
   </div>
-
-</div> <!-- End mainApp -->
+</div>
 
 <script>
 // ── Mode detection ──────────────────────────────────────────────────────────
 const urlParams  = new URLSearchParams(location.search);
 const IS_CLIENT  = urlParams.has('client');
-const CLIENT_CODE= urlParams.get('client');   // session code from URL
-const CLIENT_CFG = urlParams.get('cfg');       // base64 encoded firebase config
+const CLIENT_CODE= urlParams.get('client');
+const CLIENT_CFG = urlParams.get('cfg');
 
-// ── Game mode (tool selection) ───────────────────────────────────────────────
+// ── Game mode ───────────────────────────────────────────────────────────────
 function showToolMenu() {
   if (state) state.gameMode = 'menu';
   const menu = document.getElementById('toolMenu');
@@ -441,7 +318,6 @@ function startEMDRTool() {
   if(app) app.style.display = 'flex';
   const footer = document.getElementById('copyrightFooter');
   if(footer) footer.style.display = 'none';
-  // Canvas was 0x0 while mainApp was hidden — force immediate resize
   resizeCanvas();
   try { if (!IS_CLIENT && state) sendUpd('gameMode', 'emdr'); } catch(e) {}
 }
@@ -459,14 +335,12 @@ function updateGameMode(mode) {
   }
 }
 
-// Tool selection buttons - initialized after state is ready
 function initToolButtons() {
   if (!IS_CLIENT) {
     const startBtn = document.getElementById('startEMDRBtn');
     const backBtn = document.getElementById('backToMenuBtn');
     if(startBtn) startBtn.addEventListener('click', ()=>{
       startEMDRTool();
-      // Sync gameMode via dedicated Firebase key
       try { sendUpd('gameMode','emdr'); } catch(e) {}
     });
     if(backBtn) backBtn.addEventListener('click', ()=>{
@@ -475,7 +349,6 @@ function initToolButtons() {
     });
     showToolMenu();
   } else {
-    // Client: show menu initially, will be updated by therapist
     showToolMenu();
   }
 }
@@ -590,7 +463,7 @@ function renderBg() {
 function getBallColor() {
   if(state.colorChanging) return `hsl(${ballHue},70%,50%)`;
   const c=state.ballColor;
-  if(state.hasBgImage)    return c;
+  if(state.hasBgImage) return c;
   return colorDist(c,state.bgColor)<80?'#FFFFFF':c;
 }
 
@@ -620,7 +493,7 @@ function generateCode() {
   return Array.from({length:6},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('');
 }
 
-// ── BroadcastChannel (same-device fallback) ─────────────────────────────────
+// ── BroadcastChannel ────────────────────────────────────────────────────────
 const bc = new BroadcastChannel('emdr-tool');
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -629,11 +502,8 @@ const bc = new BroadcastChannel('emdr-tool');
 if (IS_CLIENT) {
   initAudio();
 
-  // Connect Firebase if config in URL
   if (CLIENT_CFG) {
-    try {
-      initFirebase(decodeConfig(CLIENT_CFG));
-    } catch(e) { console.error('Client Firebase init failed:', e); }
+    try { initFirebase(decodeConfig(CLIENT_CFG)); } catch(e) { console.error('Client Firebase init failed:', e); }
   }
 
   let frameX=null,frameY=null,frameShape='circle',lastAudioTs=0;
@@ -665,25 +535,14 @@ if (IS_CLIENT) {
     }
   }
 
-  // BroadcastChannel (same device)
   bc.onmessage = e => applyMsg(e.data);
 
-  // Firebase (cross-device)
   if (db && CLIENT_CODE) {
     const ref = db.ref(`sessions/${CLIENT_CODE}`);
     ref.child('frame').on('value', s => { const d=s.val(); if(d){frameX=d.x;frameY=d.y;frameShape=d.shape;} });
-    ref.child('state').on('value', s => {
-      const d=s.val();
-      if(d) Object.assign(state,d);
-    });
-    ref.child('gameMode').on('value', s => {
-      const m=s.val();
-      if(m) updateGameMode(m);
-    });
-    ref.child('audio').on('value', s => {
-      const d=s.val();
-      if(d && d.ts > lastAudioTs+80){lastAudioTs=d.ts;playClick(d.pan);}
-    });
+    ref.child('state').on('value', s => { const d=s.val(); if(d) Object.assign(state,d); });
+    ref.child('gameMode').on('value', s => { const m=s.val(); if(m) updateGameMode(m); });
+    ref.child('audio').on('value', s => { const d=s.val(); if(d && d.ts > lastAudioTs+80){lastAudioTs=d.ts;playClick(d.pan);} });
     ref.child('bgImageData').on('value', s => {
       const d=s.val();
       if(d){const img=new Image();img.onload=()=>{bgImage=img;state.hasBgImage=true;};img.src=d;}
@@ -695,20 +554,6 @@ if (IS_CLIENT) {
     });
   }
 
-  function renderClientTimer() {
-    if(!state.timerActive) return;
-    const mins=Math.floor(state.timerSeconds/60);
-    const secs=Math.floor(state.timerSeconds%60);
-    const txt=`${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
-    ctx.save();
-    ctx.font='bold 28px -apple-system,BlinkMacSystemFont,sans-serif';
-    ctx.fillStyle='rgba(0,122,255,0.8)';
-    ctx.textAlign='center';
-    ctx.textBaseline='top';
-    ctx.fillText(txt,canvas.width/2,20);
-    ctx.restore();
-  }
-
   function clientLoop() {
     renderBg();
     if(frameX!==null) drawBall(frameX,frameY,R,getBallColor(),frameShape);
@@ -716,7 +561,6 @@ if (IS_CLIENT) {
   }
   clientLoop();
 
-  // Spatiebalk (client)
   document.addEventListener('keydown',e=>{
     if(e.code==='Space'){
       e.preventDefault();
@@ -733,19 +577,11 @@ if (IS_CLIENT) {
 // ══════════════════════════════════════════════════════════════════════════
 } else {
 
-  // ── Splash ──────────────────────────────────────────────────────────────
   window.addEventListener('load',()=>{
-    requestAnimationFrame(()=>{
-      const p=document.getElementById('progFill');
-      if(p) p.style.width='100%';
-    });
-    setTimeout(()=>{
-      const s=document.getElementById('splash');
-      if(s){ s.classList.add('out'); setTimeout(()=>{ s.style.display='none'; },750); }
-    },1000);
+    requestAnimationFrame(()=>{ const p=document.getElementById('progFill'); if(p) p.style.width='100%'; });
+    setTimeout(()=>{ const s=document.getElementById('splash'); if(s){ s.classList.add('out'); setTimeout(()=>{ s.style.display='none'; },750); } },1000);
   });
 
-  // ── Animation vars ───────────────────────────────────────────────────────
   let x=0,y=0,vx=10,vy=0,rvx=10,rvy=3,rTimer=0;
   let shape='circle',shapeTimer=0,nextShape=300,frameN=0,fbFrameN=0;
   let colorHue=0,ballHue=0,lastTime=0;
@@ -758,7 +594,6 @@ if (IS_CLIENT) {
   }
   setTimeout(resetBall,0);
 
-  // ── Firebase session ─────────────────────────────────────────────────────
   const fbConfig = {
     apiKey: "AIzaSyA1FF_1JCLKcMv2QwmMjF6hwr83rxK1lSo",
     authDomain: "emdr-tool-effe4.firebaseapp.com",
@@ -770,7 +605,6 @@ if (IS_CLIENT) {
   function setSession(code) {
     sessionCode = code;
     sessionRef = db ? db.ref(`sessions/${code}`) : null;
-    // Listen for state requests (not needed with Firebase, client reads directly)
   }
 
   function buildSessionLink(code, config) {
@@ -789,7 +623,6 @@ if (IS_CLIENT) {
     if(fbDot) fbDot.classList.remove('off');
   }
 
-  // Auto-init Firebase
   if (initFirebase(fbConfig)) {
     const code = localStorage.getItem('emdr_fb_code') || generateCode();
     localStorage.setItem('emdr_fb_code', code);
@@ -819,17 +652,10 @@ if (IS_CLIENT) {
     setTimeout(() => btn.textContent = '🔄 Nieuwe link', 2000);
   });
 
-
-  // ── Update ───────────────────────────────────────────────────────────────
-  function fbSet(path, data) {
-    if (sessionRef) sessionRef.child(path).set(data).catch(_=>{});
-  }
-  function fbUpd(path, data) {
-    if (sessionRef) sessionRef.child(path).update(data).catch(_=>{});
-  }
+  function fbSet(path, data) { if (sessionRef) sessionRef.child(path).set(data).catch(_=>{}); }
+  function fbUpd(path, data) { if (sessionRef) sessionRef.child(path).update(data).catch(_=>{}); }
 
   function triggerAudio(pan) {
-    // Audio alleen client, niet therapist
     bc.postMessage({type:'audio',pan});
     fbSet('audio',{pan,ts:Date.now()});
   }
@@ -838,8 +664,7 @@ if (IS_CLIENT) {
     const spd=state.speed*SPEED_MULT*dt;
     vx=spd*Math.sign(vx||1);
     x+=vx;
-    y+=(H*0.5-y)*0.05*dt; // Y naar center
-    const pan=Math.max(0,Math.min(1,(x-R)/Math.max(W-2*R,1)));
+    y+=(H*0.5-y)*0.05*dt;
     if(x<=R){x=R;vx=spd;triggerAudio(0.0);}
     if(x>=W-R){x=W-R;vx=-spd;triggerAudio(1.0);}
   }
@@ -848,27 +673,17 @@ if (IS_CLIENT) {
     const spd=state.speed*SPEED_MULT*dt;
     rvy=spd*Math.sign(rvy||1);
     y+=rvy;
-    x+=(W*0.5-x)*0.05*dt; // X naar center
+    x+=(W*0.5-x)*0.05*dt;
     const pan=Math.max(0,Math.min(1,(x-R)/Math.max(W-2*R,1)));
     if(y<=R){y=R;rvy=spd;triggerAudio(pan);}
     if(y>=H-R){y=H-R;rvy=-spd;triggerAudio(pan);}
   }
 
-function updateRandom(W,H,dt) {
-    // Switcht tussen horizontal en vertical elke 2-3 seconden
+  function updateRandom(W,H,dt) {
     randomModeTimer+=dt;
-    const switchInterval=Math.floor(Math.random()*30+30); // 30-60 frames ≈ 2-3 sec
-    if(randomModeTimer>=switchInterval){
-      randomModeTimer=0;
-      randomMode=Math.random()>0.5?'vertical':'horizontal';
-    }
-
-    // Voer huidge randomMode uit
-    if(randomMode==='vertical') {
-      updateVertical(W,H,dt);
-    } else {
-      updateHorizontal(W,H,dt);
-    }
+    const switchInterval=Math.floor(Math.random()*30+30);
+    if(randomModeTimer>=switchInterval){randomModeTimer=0;randomMode=Math.random()>0.5?'vertical':'horizontal';}
+    if(randomMode==='vertical'){updateVertical(W,H,dt);}else{updateHorizontal(W,H,dt);}
   }
 
   function updateShape() {
@@ -884,26 +699,19 @@ function updateRandom(W,H,dt) {
     const W=canvas.width,H=canvas.height;if(!W||!H||!x)return;
     frameN++;
     if(state.colorChanging) ballHue=(ballHue+0.22*dt)%360;
-
-    // Timer countdown — dt is frames at 60fps, so divide by 60 for real seconds
     if(state.timerActive && state.timerSeconds>0) {
       state.timerSeconds-=dt/60;
-      if(state.timerSeconds<=0) {
-        state.timerSeconds=0;
-        state.timerActive=false;
-        state.paused=true;
-        sendUpd('paused',true);
+      if(state.timerSeconds<=0){
+        state.timerSeconds=0;state.timerActive=false;state.paused=true;
+        updatePauseBtn();sendUpd('paused',true);
       }
     }
-
-    // Movement based on mode
     const mode=state.randomMovement?'random':state.movementMode;
-    switch(mode) {
+    switch(mode){
       case 'vertical': updateVertical(W,H,dt); break;
       case 'random': updateRandom(W,H,dt); break;
       default: updateHorizontal(W,H,dt);
     }
-
     state.shapeShift?updateShape():(shape='circle',shapeTimer=0);
   }
 
@@ -913,75 +721,48 @@ function updateRandom(W,H,dt) {
     const secs=Math.floor(state.timerSeconds%60);
     const txt=`${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
     ctx.save();
-    ctx.font='bold 28px -apple-system,BlinkMacSystemFont,sans-serif';
-    ctx.fillStyle='rgba(0,122,255,0.8)';
-    ctx.textAlign='center';
-    ctx.textBaseline='top';
+    ctx.font='bold 28px system-ui,sans-serif';
+    ctx.fillStyle='rgba(59,130,246,0.85)';
+    ctx.textAlign='center';ctx.textBaseline='top';
     ctx.fillText(txt,canvas.width/2,20);
     ctx.restore();
   }
 
   function loop(timestamp) {
-    // Auto-resize if canvas still 0x0 (mainApp was hidden at page load)
-    if(!canvas.width || !canvas.height) {
-      resizeCanvas();
-      if(!x || !y) { x=(canvas.width||800)*0.5; y=(canvas.height||600)*0.5; }
-    }
+    if(!canvas.width||!canvas.height){resizeCanvas();if(!x||!y){x=(canvas.width||800)*0.5;y=(canvas.height||600)*0.5;}}
     const dt=lastTime?Math.min((timestamp-lastTime)/16.667,3):1;
     lastTime=timestamp;
     if(!state.paused) update(dt);
     renderBg();
     if(x&&y) drawBall(x,y,R,getBallColor(),shape);
     renderTimer();
-
-    // Same-device sync
     bc.postMessage({type:'frame',x:x||0,y:y||0,shape});
-
-    // Firebase sync ~20fps
     fbFrameN++;
-    if(fbFrameN%3===0 && sessionRef) {
-      fbSet('frame',{x:Math.round(x)||0,y:Math.round(y)||0,shape});
-    }
+    if(fbFrameN%3===0 && sessionRef) fbSet('frame',{x:Math.round(x)||0,y:Math.round(y)||0,shape});
     requestAnimationFrame(loop);
   }
   loop();
 
-  // Cleanup on close
   window.addEventListener('beforeunload',()=>{ if(sessionRef) sessionRef.remove(); });
 
-  // ── Broadcast helpers ─────────────────────────────────────────────────────
   function sendFull() {
-    const s={...state};
-    delete s.gameMode; // gameMode apart gesynchroniseerd
-    const msg={type:'fullState',state:s};
-    bc.postMessage(msg);
+    const s={...state};delete s.gameMode;
+    bc.postMessage({type:'fullState',state:s});
     fbSet('state',s);
-    if(bgImageData) {
-      setTimeout(()=>{
-        bc.postMessage({type:'bgImage',data:bgImageData});
-        fbSet('bgImageData',bgImageData);
-      },100);
-    }
+    if(bgImageData){setTimeout(()=>{bc.postMessage({type:'bgImage',data:bgImageData});fbSet('bgImageData',bgImageData);},100);}
   }
 
   function sendUpd(key,value) {
     bc.postMessage({type:'update',key,value});
-    if(key==='gameMode') {
-      // gameMode apart opslaan, niet in state
-      fbSet('gameMode',value);
-    } else {
-      fbUpd('state',{[key]:value});
-    }
+    if(key==='gameMode'){fbSet('gameMode',value);}else{fbUpd('state',{[key]:value});}
   }
 
   bc.onmessage = e => { if(e.data.type==='requestState') sendFull(); };
 
-  // Timer display update loop
   setInterval(updateTimerDisplay,100);
 
-  // ── Zoom (same-device) ────────────────────────────────────────────────────
-  let zoomWin=null;
   document.getElementById('zoomBtn').addEventListener('click',()=>{
+    let zoomWin=null;
     if(zoomWin&&!zoomWin.closed){zoomWin.focus();return;}
     const url=location.origin+location.pathname+'?client';
     zoomWin=window.open(url,'EMDRZoom','width=1280,height=760,menubar=no,toolbar=no,location=no,status=no,scrollbars=no,resizable=yes');
@@ -989,15 +770,15 @@ function updateRandom(W,H,dt) {
     else setTimeout(sendFull,400);
   });
 
-  // ── Pause / Start ─────────────────────────────────────────────────────────
+  // ── Pause / Start ──────────────────────────────────────────────────────────
   const pauseBtn=document.getElementById('pauseBtn');
   function updatePauseBtn(){
     if(state.paused){
       pauseBtn.textContent='▶  Start';
-      pauseBtn.style.background='#34C759';
+      pauseBtn.style.background='#22c55e';
     } else {
       pauseBtn.textContent='⏸  Pauze';
-      pauseBtn.style.background='rgba(255,59,48,.9)';
+      pauseBtn.style.background='rgba(239,68,68,.9)';
     }
   }
   updatePauseBtn();
@@ -1008,7 +789,7 @@ function updateRandom(W,H,dt) {
     sendUpd('paused',state.paused);
   });
 
-  // ── Speed ─────────────────────────────────────────────────────────────────
+  // ── Speed ──────────────────────────────────────────────────────────────────
   const speedSlider=document.getElementById('speedSlider');
   const speedLabel=document.getElementById('speedLabel');
   function updateSliderTrack(){
@@ -1025,7 +806,7 @@ function updateRandom(W,H,dt) {
     updateSliderTrack();sendUpd('speed',state.speed);
   });
 
-  // ── Ball color ────────────────────────────────────────────────────────────
+  // ── Ball color ─────────────────────────────────────────────────────────────
   function updateConflicts(){
     document.querySelectorAll('#ballSwatches .swatch').forEach(btn=>{
       const blocked=state.colorChanging?getBrightness(btn.dataset.color)<35:colorDist(btn.dataset.color,state.bgColor)<80;
@@ -1045,7 +826,7 @@ function updateRandom(W,H,dt) {
     const btn=e.target.closest('.swatch');if(!btn||btn.classList.contains('conflict'))return;applyBallColor(btn.dataset.color);
   });
 
-  // ── Background color ──────────────────────────────────────────────────────
+  // ── Background color ───────────────────────────────────────────────────────
   function clearImgSelection(){
     bgImage=null;bgImageData=null;state.hasBgImage=false;state.bgImageFile=null;
     document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('selected'));
@@ -1070,7 +851,7 @@ function updateRandom(W,H,dt) {
     applyBgColor(e.target.value,true);
   });
 
-  // ── Preset images ─────────────────────────────────────────────────────────
+  // ── Preset images ──────────────────────────────────────────────────────────
   function loadPresetBg(filename,btn){
     const img=new Image();
     img.onload=()=>{
@@ -1089,7 +870,7 @@ function updateRandom(W,H,dt) {
   }
   document.getElementById('presetGrid').addEventListener('click',e=>{const btn=e.target.closest('.preset-btn');if(btn)loadPresetBg(btn.dataset.file,btn);});
 
-  // ── Custom image ──────────────────────────────────────────────────────────
+  // ── Custom image ───────────────────────────────────────────────────────────
   document.getElementById('bgImgInput').addEventListener('change',e=>{
     const file=e.target.files[0];if(!file)return;
     const reader=new FileReader();
@@ -1114,7 +895,7 @@ function updateRandom(W,H,dt) {
     bc.postMessage({type:'bgImage',data:null});
   });
 
-  // ── Toggles ───────────────────────────────────────────────────────────────
+  // ── Toggles ────────────────────────────────────────────────────────────────
   document.getElementById('audioToggle').addEventListener('change',e=>{initAudio();state.audioEnabled=e.target.checked;sendUpd('audioEnabled',state.audioEnabled);});
   document.getElementById('shapeToggle').addEventListener('change',e=>{state.shapeShift=e.target.checked;sendUpd('shapeShift',state.shapeShift);});
   document.getElementById('colorChangingToggle').addEventListener('change',e=>{
@@ -1126,18 +907,13 @@ function updateRandom(W,H,dt) {
 
   // ── Movement Mode ──────────────────────────────────────────────────────────
   document.getElementById('movementMode').addEventListener('change',e=>{
-    state.movementMode=e.target.value;
-    resetBall();
-    sendUpd('movementMode',state.movementMode);
+    state.movementMode=e.target.value;resetBall();sendUpd('movementMode',state.movementMode);
   });
 
   // ── Timer ──────────────────────────────────────────────────────────────────
   function updateTimerDisplay() {
     const display=document.getElementById('timerDisplay');
-    if(!state.timerActive) {
-      display.style.display='none';
-      return;
-    }
+    if(!state.timerActive){display.style.display='none';return;}
     const mins=Math.floor(state.timerSeconds/60);
     const secs=Math.floor(state.timerSeconds%60);
     display.textContent=`${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
@@ -1149,42 +925,27 @@ function updateRandom(W,H,dt) {
     const secs=parseInt(document.getElementById('timerSeconds').value||0);
     const total=mins*60+secs;
     if(total<=0){alert('Voer tijd in');return;}
-    state.timerSeconds=total;
-    state.timerActive=true;
-    state.paused=false;
-    sendUpd('timerSeconds',state.timerSeconds);
-    sendUpd('timerActive',true);
-    sendUpd('paused',false);
+    state.timerSeconds=total;state.timerActive=true;state.paused=false;
+    updatePauseBtn();
+    sendUpd('timerSeconds',state.timerSeconds);sendUpd('timerActive',true);sendUpd('paused',false);
     updateTimerDisplay();
   });
 
   document.getElementById('timerStopBtn').addEventListener('click',()=>{
-    state.timerActive=false;
-    state.timerSeconds=0;
-    state.paused=true;
-    sendUpd('timerActive',false);
-    sendUpd('timerSeconds',0);
-    sendUpd('paused',true);
+    state.timerActive=false;state.timerSeconds=0;state.paused=true;
+    updatePauseBtn();
+    sendUpd('timerActive',false);sendUpd('timerSeconds',0);sendUpd('paused',true);
     updateTimerDisplay();
   });
 
-  // Spatiebalk (therapist - listen for client input)
   if(db && sessionCode) {
     db.ref(`sessions/${sessionCode}/spacebar`).on('value',s=>{
       const d=s.val();
-      if(d&&d.ts){
-        const ind=document.getElementById('indDot');
-        if(ind){
-          ind.classList.add('lit');
-          setTimeout(()=>ind.classList.remove('lit'),500);
-        }
-      }
+      if(d&&d.ts){const ind=document.getElementById('indDot');if(ind){ind.classList.add('lit');setTimeout(()=>ind.classList.remove('lit'),500);}}
     });
   }
 
   document.addEventListener('click',initAudio,{once:true});
-
-  // Initialize tool buttons after all functions are defined
   initToolButtons();
 }
 </script>
