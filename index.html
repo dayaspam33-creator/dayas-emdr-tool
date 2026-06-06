@@ -130,7 +130,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;background:#fff;borde
 
     <div class="w-px h-7 bg-white/15 shrink-0 mx-1"></div>
 
-    <button id="pauseBtn" class="h-8 px-4 rounded-lg text-xs font-bold text-white shrink-0 whitespace-nowrap transition-colors" style="background:#22c55e;min-width:96px;">▶  Start</button>
+    <button id="pauseBtn" style="background:#22c55e;color:#fff;height:36px;padding:0 18px;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;min-width:100px;transition:background .15s;">▶  Start</button>
 
     <div class="w-px h-7 bg-white/15 shrink-0 mx-1"></div>
 
@@ -192,7 +192,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;background:#fff;borde
 
     <!-- Canvas -->
     <div id="clientArea" class="flex-1 relative overflow-hidden bg-black">
-      <canvas id="canvas"></canvas>
+      <canvas id="canvas" style="display:block;width:100%;height:100%;"></canvas>
       <div id="zoomSpaceIndicator" class="absolute bottom-3 left-3 w-64 h-44 rounded-2xl border-2 border-dashed border-white/20 flex items-center justify-center pointer-events-none">
         <div class="flex flex-col items-center gap-1 text-white/20 text-center">
           <span class="text-3xl">📹</span>
@@ -319,6 +319,7 @@ function startEMDRTool() {
   const footer = document.getElementById('copyrightFooter');
   if(footer) footer.style.display = 'none';
   resizeCanvas();
+  setTimeout(()=>{ resizeCanvas(); if(!x||!y){x=(canvas.width||800)*.5;y=(canvas.height||600)*.5;} },80);
   try { if (!IS_CLIENT && state) sendUpd('gameMode', 'emdr'); } catch(e) {}
 }
 
@@ -761,8 +762,8 @@ if (IS_CLIENT) {
 
   setInterval(updateTimerDisplay,100);
 
+  let zoomWin=null;
   document.getElementById('zoomBtn').addEventListener('click',()=>{
-    let zoomWin=null;
     if(zoomWin&&!zoomWin.closed){zoomWin.focus();return;}
     const url=location.origin+location.pathname+'?client';
     zoomWin=window.open(url,'EMDRZoom','width=1280,height=760,menubar=no,toolbar=no,location=no,status=no,scrollbars=no,resizable=yes');
