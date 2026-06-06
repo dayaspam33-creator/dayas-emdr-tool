@@ -147,6 +147,65 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;background:#fff;borde
 .btn-file:hover{background:#E5E5EA;}
 .btn-img-remove{font-size:13px;color:#FF3B30;background:none;border:none;cursor:pointer;font-family:inherit;padding:0;}
 .img-preview{width:48px;height:34px;border-radius:6px;object-fit:cover;box-shadow:0 1px 4px rgba(0,0,0,.2);flex-shrink:0;display:none;}
+
+/* ── NEW LAYOUT ── */
+#mainApp{flex-direction:column;}
+
+/* Top bar */
+#topBar{height:66px;background:#1C1C1E;display:flex;align-items:center;gap:7px;padding:0 12px;flex-shrink:0;overflow-x:auto;}
+#topBar::-webkit-scrollbar{display:none;}
+#mainContent{flex:1;display:flex;overflow:hidden;}
+
+.tb-sep{width:1px;height:26px;background:rgba(255,255,255,.14);flex-shrink:0;margin:0 2px;}
+.tb-group{display:flex;align-items:center;gap:5px;flex-shrink:0;}
+.tb-lbl{font-size:11px;color:rgba(255,255,255,.4);white-space:nowrap;}
+
+.tb-btn{height:32px;padding:0 11px;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;background:rgba(255,255,255,.11);color:#fff;white-space:nowrap;flex-shrink:0;transition:background .15s;}
+.tb-btn:hover{background:rgba(255,255,255,.2);}
+.tb-btn-red{background:rgba(255,59,48,.85);}
+.tb-btn-red:hover{background:rgba(255,59,48,1);}
+.tb-btn-blue{background:#007AFF;}
+.tb-btn-blue:hover{background:#0066d6;}
+
+.tb-select{height:32px;padding:0 7px;border:none;border-radius:7px;font-size:12px;background:rgba(255,255,255,.11);color:#fff;font-family:inherit;cursor:pointer;flex-shrink:0;outline:none;}
+.tb-select option{background:#1C1C1E;color:#fff;}
+
+.tb-slider{width:86px;height:18px;}
+#topBar input[type=range]::-webkit-slider-runnable-track{height:3px;border-radius:2px;background:linear-gradient(to right,#007AFF var(--fill,40%),rgba(255,255,255,.18) var(--fill,40%));}
+#topBar input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#fff;border-radius:50%;box-shadow:0 1px 5px rgba(0,0,0,.35);cursor:grab;margin-top:-7.5px;}
+#topBar .slider-val{font-size:12px;color:#007AFF;min-width:28px;}
+
+.tb-toggles{display:flex;gap:3px;flex-shrink:0;}
+.tb-tog{display:flex;align-items:center;cursor:pointer;}
+.tb-tog input[type=checkbox]{display:none;}
+.tb-tog span{display:inline-flex;align-items:center;gap:3px;padding:5px 8px;background:rgba(255,255,255,.09);border-radius:6px;font-size:11px;font-weight:500;color:rgba(255,255,255,.45);white-space:nowrap;transition:background .18s,color .18s;font-family:inherit;}
+.tb-tog input:checked+span{background:rgba(52,199,89,.8);color:#fff;}
+
+.tb-num{width:36px;padding:4px 3px;border:1px solid rgba(255,255,255,.16);border-radius:5px;font-size:12px;text-align:center;background:rgba(255,255,255,.07);color:#fff;font-family:inherit;outline:none;}
+
+#topBar .btn-pause{width:auto;height:32px;padding:0 13px;margin-bottom:0;border-radius:7px;font-size:12px;flex-shrink:0;}
+#topBar .btn-pause.running{background:rgba(255,255,255,.14);}
+#topBar #timerDisplay{font-size:14px;font-weight:700;color:#007AFF;min-width:38px;text-align:center;}
+
+/* Zoom space indicator in canvas */
+#zoomSpaceIndicator{position:absolute;bottom:10px;left:10px;width:256px;height:176px;border:2px dashed rgba(255,255,255,.18);border-radius:10px;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:4;}
+#zoomSpaceBox{display:flex;flex-direction:column;align-items:center;gap:4px;color:rgba(255,255,255,.18);font-size:11px;font-weight:500;text-align:center;line-height:1.4;}
+
+/* Compact side panel */
+#controls{width:212px !important;height:100%;overflow-y:auto;background:#F2F2F7;padding:10px 10px 14px;flex-shrink:0;border-left:1px solid rgba(0,0,0,.07);}
+#controls::-webkit-scrollbar{width:3px;}
+#controls::-webkit-scrollbar-thumb{background:rgba(0,0,0,.12);border-radius:2px;}
+#controls .card-title{font-size:10px;margin-bottom:8px;}
+#controls .swatch{width:26px;height:26px;}
+#controls #ballSwatches{grid-template-columns:repeat(4,1fr);gap:5px;}
+#controls #bgSwatches{gap:5px;}
+#controls .divider{margin:8px 0;}
+#controls .preset-btn{height:44px;border-radius:7px;}
+#controls .preset-grid{gap:5px;margin-top:6px;}
+#controls .picker-row{margin-top:8px;}
+#controls .img-row{margin-top:6px;}
+#controls .btn-file{font-size:11px;padding:5px 8px;}
+#controls .btn-zoom{height:34px;font-size:12px;margin-bottom:0;}
 </style>
 </head>
 <body>
@@ -209,132 +268,158 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;background:#fff;borde
 </div>
 
 <!-- Main App Container -->
-<div id="mainApp" style="display:none;height:100vh;width:100%;position:relative;">
+<div id="mainApp" style="display:none;height:100vh;width:100%;">
 
-<div id="clientArea"><canvas id="canvas"></canvas></div>
+  <!-- ── Top Bar ── -->
+  <div id="topBar">
 
-<div id="controls">
-  <button id="backToMenuBtn" onclick="document.getElementById('toolMenu').style.display='flex';document.getElementById('mainApp').style.display='none';" style="width:100%;padding:10px;background:#FF3B30;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:14px;font-family:inherit;">← Terug naar Menu</button>
+    <button id="backToMenuBtn" class="tb-btn tb-btn-red" onclick="document.getElementById('toolMenu').style.display='flex';document.getElementById('mainApp').style.display='none';document.getElementById('copyrightFooter').style.display='';">← Menu</button>
 
-  <div class="panel-title">Daya's EMDR-tool</div>
-  <div class="panel-sub">Therapist Controls</div>
+    <div class="tb-sep"></div>
 
-  <button class="btn-pause" id="pauseBtn"></button>
-  <button class="btn-zoom" id="zoomBtn">↗ Openen in nieuw venster</button>
+    <button class="btn-pause" id="pauseBtn"></button>
 
-  <!-- Bal stijl -->
-  <div class="card">
-    <div class="card-title">Bal Stijl &amp; Instellingen</div>
-    <div class="swatches" id="ballSwatches">
-      <button class="swatch" data-color="#007AFF" style="background:#007AFF"></button>
-      <button class="swatch selected" data-color="#FFFFFF" style="background:#FFFFFF;border:2px solid #ddd"></button>
-      <button class="swatch" data-color="#34C759" style="background:#34C759"></button>
-      <button class="swatch" data-color="#FF3B30" style="background:#FF3B30"></button>
-      <button class="swatch" data-color="#FFCC00" style="background:#FFCC00"></button>
-      <button class="swatch" data-color="#AF52DE" style="background:#AF52DE"></button>
-      <button class="swatch" data-color="#FF9500" style="background:#FF9500"></button>
-      <button class="swatch" data-color="#5AC8FA" style="background:#5AC8FA"></button>
+    <div class="tb-sep"></div>
+
+    <div class="tb-group">
+      <span class="tb-lbl">Snelheid</span>
+      <input type="range" id="speedSlider" min="1" max="25" value="10" class="tb-slider">
+      <span class="slider-val" id="speedLabel">40%</span>
     </div>
-    <hr class="divider" style="margin-top:16px;">
-    <div class="row">
-      <div class="row-text"><div class="row-label">Shape Shifting</div><div class="row-sub">Wisselt af en toe van vorm</div></div>
-      <label class="ios-toggle"><input type="checkbox" id="shapeToggle"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
-    </div>
-    <div class="row">
-      <div class="row-text"><div class="row-label">Willekeurige Beweging</div><div class="row-sub">Bal beweegt vrij over het scherm</div></div>
-      <label class="ios-toggle"><input type="checkbox" id="randomToggle"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
-    </div>
-    <div class="row">
-      <div class="row-text"><div class="row-label">Bilateraal Audio</div><div class="row-sub">Click met L/R panning</div></div>
-      <label class="ios-toggle"><input type="checkbox" id="audioToggle"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
-    </div>
-    <div class="row">
-      <div class="row-text"><div class="row-label">Color Changing</div><div class="row-sub">Achtergrond cyclet van kleur</div></div>
-      <label class="ios-toggle"><input type="checkbox" id="colorChangingToggle"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
-    </div>
-  </div>
 
-  <!-- Snelheid & Beweging Modus -->
-  <div class="card">
-    <div class="card-title">Beweging</div>
-    <div class="slider-header"><span class="slider-label">Snelheid</span><span class="slider-val" id="speedLabel">40%</span></div>
-    <input type="range" id="speedSlider" min="1" max="25" value="10">
-    <div class="slider-ends"><span>Langzaam</span><span>Snel</span></div>
-    <div class="divider" style="margin-top:14px;margin-bottom:14px;"></div>
-    <div class="row-label" style="margin-bottom:8px;">Beweging Modus</div>
-    <select id="movementMode" style="width:100%;padding:8px 10px;border:1px solid #E5E5EA;border-radius:8px;font-size:13px;background:#F9F9FB;color:#1C1C1E;font-family:inherit;">
+    <div class="tb-sep"></div>
+
+    <select id="movementMode" class="tb-select">
       <option value="horizontal">↔ Horizontaal</option>
       <option value="vertical">↕ Verticaal</option>
       <option value="random">🎲 Willekeurig</option>
     </select>
+
+    <div class="tb-sep"></div>
+
+    <div class="tb-toggles">
+      <label class="tb-tog"><input type="checkbox" id="audioToggle"><span>🔊 Audio</span></label>
+      <label class="tb-tog"><input type="checkbox" id="shapeToggle"><span>⬡ Vorm</span></label>
+      <label class="tb-tog"><input type="checkbox" id="colorChangingToggle"><span>🎨 Kleur</span></label>
+      <label class="tb-tog"><input type="checkbox" id="randomToggle"><span>🎲 Random</span></label>
+    </div>
+
+    <div class="tb-sep"></div>
+
+    <div class="tb-group">
+      <span class="tb-lbl">Timer</span>
+      <input type="number" id="timerMinutes" min="0" max="60" value="0" class="tb-num">
+      <span class="tb-lbl">m</span>
+      <input type="number" id="timerSeconds" min="0" max="59" value="0" class="tb-num">
+      <span class="tb-lbl">s</span>
+      <button id="timerStartBtn" class="tb-btn tb-btn-blue">▶</button>
+      <button id="timerStopBtn" class="tb-btn">■</button>
+      <div id="timerDisplay" style="display:none;">00:00</div>
+    </div>
+
   </div>
 
-  <!-- Timer -->
-  <div class="card">
-    <div class="card-title">Sessie Timer</div>
-    <div class="row">
-      <div class="row-text"><div class="row-label">Minuten</div></div>
-      <input type="number" id="timerMinutes" min="0" max="60" value="0" style="width:60px;padding:6px 8px;border:1px solid #E5E5EA;border-radius:8px;font-size:13px;text-align:center;">
-    </div>
-    <div class="row" style="margin-top:10px;">
-      <div class="row-text"><div class="row-label">Seconden</div></div>
-      <input type="number" id="timerSeconds" min="0" max="59" value="0" style="width:60px;padding:6px 8px;border:1px solid #E5E5EA;border-radius:8px;font-size:13px;text-align:center;">
-    </div>
-    <div class="row" style="margin-top:10px;">
-      <button id="timerStartBtn" class="fb-btn blue" style="flex:1;">Start Timer</button>
-      <button id="timerStopBtn" class="fb-btn gray" style="flex:1;margin-left:8px;">Stop</button>
-    </div>
-    <div id="timerDisplay" style="text-align:center;font-size:18px;font-weight:700;color:#007AFF;margin-top:10px;display:none;">00:00</div>
-  </div>
+  <!-- ── Main Content ── -->
+  <div id="mainContent">
 
-  <!-- Achtergrond -->
-  <div class="card">
-    <div class="card-title">Achtergrond – Kleuren</div>
-    <div class="swatches" id="bgSwatches">
-      <button class="swatch selected" data-color="#000000" style="background:#000000" title="Zwart"></button>
-      <button class="swatch" data-color="#2C2C2E" style="background:#2C2C2E" title="Grijs"></button>
-      <button class="swatch" data-color="#1A1A6E" style="background:#1A1A6E" title="Blauw"></button>
-      <button class="swatch" data-color="#1A4A1A" style="background:#1A4A1A" title="Groen"></button>
-      <button class="swatch" data-color="#4A1A1A" style="background:#4A1A1A" title="Rood"></button>
+    <!-- Canvas area (client view) -->
+    <div id="clientArea">
+      <canvas id="canvas"></canvas>
+      <!-- Zoom venster ruimte indicator -->
+      <div id="zoomSpaceIndicator">
+        <div id="zoomSpaceBox">
+          <span style="font-size:22px;">📹</span>
+          <span>Zoom venster</span>
+          <span style="font-size:9px;opacity:.75;">Zet hier het Zoom<br>camera venster neer</span>
+        </div>
+      </div>
     </div>
-    <div class="picker-row" style="margin-top:14px;padding-top:14px;border-top:1px solid #E5E5EA;">
-      <span class="picker-label">Eigen kleur</span>
-      <div class="cpick-wrap" id="bgPickWrap" style="background:#000000"><input type="color" id="bgPicker" value="#000000"></div>
+
+    <!-- Side panel: visuele instellingen -->
+    <div id="controls">
+
+      <!-- Session link -->
+      <div id="fbReady" style="display:none;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:5px;margin-bottom:5px;">
+          <div class="fb-dot" id="fbDot"></div>
+          <span style="font-size:10px;color:#34C759;font-weight:500;">Verbonden</span>
+        </div>
+        <div class="fb-link-row">
+          <input class="fb-link-input" type="text" id="sessionLinkInput" readonly style="font-size:9px;">
+          <button class="fb-btn green fb-btn small" id="copyLinkBtn" style="font-size:11px;padding:5px 7px;">📋</button>
+        </div>
+        <button class="fb-btn gray fb-btn small" id="newCodeBtn" style="width:100%;margin-top:5px;font-size:11px;">🔄 Nieuwe link</button>
+      </div>
+      <div id="fbNotReady" style="display:block;font-size:10px;color:#8E8E93;margin-bottom:10px;">Verbinding opzetten...</div>
+
+      <!-- Bal kleur -->
+      <div class="card-title">Bal Kleur</div>
+      <div class="swatches" id="ballSwatches">
+        <button class="swatch" data-color="#007AFF" style="background:#007AFF"></button>
+        <button class="swatch selected" data-color="#FFFFFF" style="background:#FFFFFF;border:2px solid #ddd"></button>
+        <button class="swatch" data-color="#34C759" style="background:#34C759"></button>
+        <button class="swatch" data-color="#FF3B30" style="background:#FF3B30"></button>
+        <button class="swatch" data-color="#FFCC00" style="background:#FFCC00"></button>
+        <button class="swatch" data-color="#AF52DE" style="background:#AF52DE"></button>
+        <button class="swatch" data-color="#FF9500" style="background:#FF9500"></button>
+        <button class="swatch" data-color="#5AC8FA" style="background:#5AC8FA"></button>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Achtergrond kleur -->
+      <div class="card-title">Achtergrond Kleur</div>
+      <div class="swatches" id="bgSwatches">
+        <button class="swatch selected" data-color="#000000" style="background:#000000" title="Zwart"></button>
+        <button class="swatch" data-color="#2C2C2E" style="background:#2C2C2E" title="Grijs"></button>
+        <button class="swatch" data-color="#1A1A6E" style="background:#1A1A6E" title="Blauw"></button>
+        <button class="swatch" data-color="#1A4A1A" style="background:#1A4A1A" title="Groen"></button>
+        <button class="swatch" data-color="#4A1A1A" style="background:#4A1A1A" title="Rood"></button>
+      </div>
+      <div class="picker-row">
+        <span class="picker-label" style="font-size:11px;">Eigen kleur</span>
+        <div class="cpick-wrap" id="bgPickWrap" style="background:#000000;width:26px;height:26px;"><input type="color" id="bgPicker" value="#000000"></div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Achtergrond foto's -->
+      <div class="card-title">Achtergrond Foto</div>
+      <div class="preset-grid" id="presetGrid">
+        <button class="preset-btn" data-file="bg-savanne.webp">
+          <div class="preset-icon" id="icon-savanne">🌅</div>
+          <img src="bg-savanne.webp" onload="document.getElementById('icon-savanne').style.display='none'" onerror="this.style.display='none'">
+          <span class="preset-label">Savanne</span>
+        </button>
+        <button class="preset-btn" data-file="bg-bos.webp">
+          <div class="preset-icon" id="icon-bos">🌲</div>
+          <img src="bg-bos.webp" onload="document.getElementById('icon-bos').style.display='none'" onerror="this.style.display='none'">
+          <span class="preset-label">Bos</span>
+        </button>
+        <button class="preset-btn" data-file="bg-wolken.webp">
+          <div class="preset-icon" id="icon-wolken">☁️</div>
+          <img src="bg-wolken.webp" onload="document.getElementById('icon-wolken').style.display='none'" onerror="this.style.display='none'">
+          <span class="preset-label">Wolken</span>
+        </button>
+        <button class="preset-btn" data-file="bg-bergen.webp">
+          <div class="preset-icon" id="icon-bergen">⛰️</div>
+          <img src="bg-bergen.webp" onload="document.getElementById('icon-bergen').style.display='none'" onerror="this.style.display='none'">
+          <span class="preset-label">Bergen</span>
+        </button>
+      </div>
+      <div class="img-row">
+        <label class="btn-file">📁 Foto laden<input type="file" id="bgImgInput" accept="image/*" style="display:none"></label>
+        <img id="imgPreview" class="img-preview" alt="">
+        <button class="btn-img-remove" id="removeBgImg" style="display:none">✕</button>
+      </div>
+
+      <hr class="divider">
+
+      <button class="btn-zoom" id="zoomBtn">↗ Nieuw venster</button>
+
     </div>
-    <hr class="divider" style="margin-top:16px;">
-    <div class="card-title" style="margin-bottom:14px;">Achtergrond – Foto's</div>
-    <div class="row-label" style="margin-bottom:8px;"></div>
-    <div class="preset-grid" id="presetGrid">
-      <button class="preset-btn" data-file="bg-savanne.webp">
-        <div class="preset-icon" id="icon-savanne">🌅</div>
-        <img src="bg-savanne.webp" onload="document.getElementById('icon-savanne').style.display='none'" onerror="this.style.display='none'">
-        <span class="preset-label">Savanne</span>
-      </button>
-      <button class="preset-btn" data-file="bg-bos.webp">
-        <div class="preset-icon" id="icon-bos">🌲</div>
-        <img src="bg-bos.webp" onload="document.getElementById('icon-bos').style.display='none'" onerror="this.style.display='none'">
-        <span class="preset-label">Bos</span>
-      </button>
-      <button class="preset-btn" data-file="bg-wolken.webp">
-        <div class="preset-icon" id="icon-wolken">☁️</div>
-        <img src="bg-wolken.webp" onload="document.getElementById('icon-wolken').style.display='none'" onerror="this.style.display='none'">
-        <span class="preset-label">Wolken</span>
-      </button>
-      <button class="preset-btn" data-file="bg-bergen.webp">
-        <div class="preset-icon" id="icon-bergen">⛰️</div>
-        <img src="bg-bergen.webp" onload="document.getElementById('icon-bergen').style.display='none'" onerror="this.style.display='none'">
-        <span class="preset-label">Bergen</span>
-      </button>
-    </div>
-    <hr class="divider">
-    <div class="row-label" style="margin-bottom:8px;">Eigen foto</div>
-    <div class="img-row">
-      <label class="btn-file">📁 Foto laden<input type="file" id="bgImgInput" accept="image/*" style="display:none"></label>
-      <img id="imgPreview" class="img-preview" alt="">
-      <button class="btn-img-remove" id="removeBgImg" style="display:none">Verwijder</button>
-    </div>
+
   </div>
-</div>
 
 </div> <!-- End mainApp -->
 
@@ -361,6 +446,8 @@ function startEMDRTool() {
   const app = document.getElementById('mainApp');
   if(menu) menu.style.display = 'none';
   if(app) app.style.display = 'flex';
+  const footer = document.getElementById('copyrightFooter');
+  if(footer) footer.style.display = 'none';
   try { if (!IS_CLIENT && state) sendUpd('gameMode', 'emdr'); } catch(e) {}
 }
 
