@@ -54,7 +54,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;background:#fff;borde
 /* Toggle pill (checkbox hidden, label styled via peer) */
 .tog-label{cursor:pointer;}
 .tog-label input[type=checkbox]{display:none;}
-.tog-label input:checked + span{background:rgba(52,199,89,.85);color:#fff;}
+.tog-label input:checked + span{background:rgba(52,199,89,.85)!important;color:#fff!important;}
 </style>
 </head>
 <body class="flex font-sans text-zinc-900" style="height:100vh;">
@@ -122,66 +122,66 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;background:#fff;borde
 <div id="mainApp" style="display:none;height:100vh;width:100%;flex-direction:column;">
 
   <!-- Top bar -->
-  <div id="topBar" class="flex items-center gap-2 px-3 bg-zinc-900 shrink-0 overflow-x-auto" style="height:66px;scrollbar-width:none;">
+  <div id="topBar" style="display:flex;align-items:center;gap:8px;height:66px;background:#18181b;padding:0 12px;flex-shrink:0;overflow-x:auto;scrollbar-width:none;">
 
     <button id="backToMenuBtn"
       onclick="document.getElementById('toolMenu').style.display='flex';document.getElementById('mainApp').style.display='none';document.getElementById('copyrightFooter').style.display='';"
-      class="px-3 h-8 rounded-lg text-xs font-bold text-white bg-red-500 hover:bg-red-600 shrink-0 whitespace-nowrap transition-colors">← Menu</button>
+      style="height:36px;padding:0 12px;background:#ef4444;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">← Menu</button>
 
-    <div class="w-px h-7 bg-white/15 shrink-0 mx-1"></div>
+    <div style="width:1px;height:28px;background:rgba(255,255,255,.15);flex-shrink:0;margin:0 4px;"></div>
 
     <button id="pauseBtn" style="background:#22c55e;color:#fff;height:36px;padding:0 18px;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;min-width:100px;transition:background .15s;">▶  Start</button>
 
-    <div class="w-px h-7 bg-white/15 shrink-0 mx-1"></div>
+    <div style="width:1px;height:28px;background:rgba(255,255,255,.15);flex-shrink:0;margin:0 4px;"></div>
 
     <!-- Speed -->
-    <div class="flex items-center gap-2 shrink-0">
-      <span class="text-[11px] text-white/40 whitespace-nowrap">Snelheid</span>
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+      <span style="font-size:11px;color:rgba(255,255,255,.4);white-space:nowrap;">Snelheid</span>
       <input type="range" id="speedSlider" min="1" max="25" value="10" class="w-24">
-      <span id="speedLabel" class="text-xs font-semibold text-blue-400 min-w-[30px]">40%</span>
+      <span id="speedLabel" style="font-size:12px;font-weight:600;color:#60a5fa;min-width:30px;">40%</span>
     </div>
 
-    <div class="w-px h-7 bg-white/15 shrink-0 mx-1"></div>
+    <div style="width:1px;height:28px;background:rgba(255,255,255,.15);flex-shrink:0;margin:0 4px;"></div>
 
-    <select id="movementMode" class="h-8 px-2 rounded-lg text-xs bg-white/10 text-white border-0 shrink-0 outline-none cursor-pointer">
+    <select id="movementMode" style="height:34px;padding:0 8px;border-radius:8px;font-size:12px;background:rgba(255,255,255,.12);color:#fff;border:none;flex-shrink:0;outline:none;cursor:pointer;">
       <option value="horizontal">↔ Horizontaal</option>
       <option value="vertical">↕ Verticaal</option>
       <option value="random">🎲 Willekeurig</option>
     </select>
 
-    <div class="w-px h-7 bg-white/15 shrink-0 mx-1"></div>
+    <div style="width:1px;height:28px;background:rgba(255,255,255,.15);flex-shrink:0;margin:0 4px;"></div>
 
     <!-- Toggles -->
-    <div class="flex gap-1 shrink-0">
+    <div style="display:flex;gap:4px;flex-shrink:0;">
       <label class="tog-label">
         <input type="checkbox" id="audioToggle">
-        <span class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-white/10 text-white/50 whitespace-nowrap transition-colors">🔊 Audio</span>
+        <span style="display:inline-flex;align-items:center;gap:3px;padding:5px 10px;background:rgba(255,255,255,.1);border-radius:7px;font-size:11px;font-weight:500;color:rgba(255,255,255,.45);white-space:nowrap;cursor:pointer;transition:background .2s,color .2s;">🔊 Audio</span>
       </label>
       <label class="tog-label">
         <input type="checkbox" id="shapeToggle">
-        <span class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-white/10 text-white/50 whitespace-nowrap transition-colors">⬡ Vorm</span>
+        <span style="display:inline-flex;align-items:center;gap:3px;padding:5px 10px;background:rgba(255,255,255,.1);border-radius:7px;font-size:11px;font-weight:500;color:rgba(255,255,255,.45);white-space:nowrap;cursor:pointer;transition:background .2s,color .2s;">⬡ Vorm</span>
       </label>
       <label class="tog-label">
         <input type="checkbox" id="colorChangingToggle">
-        <span class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-white/10 text-white/50 whitespace-nowrap transition-colors">🎨 Kleur</span>
+        <span style="display:inline-flex;align-items:center;gap:3px;padding:5px 10px;background:rgba(255,255,255,.1);border-radius:7px;font-size:11px;font-weight:500;color:rgba(255,255,255,.45);white-space:nowrap;cursor:pointer;transition:background .2s,color .2s;">🎨 Kleur</span>
       </label>
       <label class="tog-label">
         <input type="checkbox" id="randomToggle">
-        <span class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-white/10 text-white/50 whitespace-nowrap transition-colors">🎲 Random</span>
+        <span style="display:inline-flex;align-items:center;gap:3px;padding:5px 10px;background:rgba(255,255,255,.1);border-radius:7px;font-size:11px;font-weight:500;color:rgba(255,255,255,.45);white-space:nowrap;cursor:pointer;transition:background .2s,color .2s;">🎲 Random</span>
       </label>
     </div>
 
-    <div class="w-px h-7 bg-white/15 shrink-0 mx-1"></div>
+    <div style="width:1px;height:28px;background:rgba(255,255,255,.15);flex-shrink:0;margin:0 4px;"></div>
 
     <!-- Timer -->
-    <div class="flex items-center gap-1.5 shrink-0">
-      <span class="text-[11px] text-white/40">Timer</span>
-      <input type="number" id="timerMinutes" min="0" max="60" value="0" class="w-10 text-center text-xs text-white bg-white/10 border border-white/20 rounded-md py-1 outline-none">
-      <span class="text-[11px] text-white/40">m</span>
-      <input type="number" id="timerSeconds" min="0" max="59" value="0" class="w-10 text-center text-xs text-white bg-white/10 border border-white/20 rounded-md py-1 outline-none">
-      <span class="text-[11px] text-white/40">s</span>
-      <button id="timerStartBtn" class="px-2.5 py-1 rounded-md text-xs font-semibold text-white bg-blue-500 hover:bg-blue-600 transition-colors">▶</button>
-      <button id="timerStopBtn" class="px-2.5 py-1 rounded-md text-xs font-semibold text-white bg-white/15 hover:bg-white/25 transition-colors">■</button>
+    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+      <span style="font-size:11px;color:rgba(255,255,255,.4);">Timer</span>
+      <input type="number" id="timerMinutes" min="0" max="60" value="0" style="width:38px;text-align:center;font-size:12px;color:#fff;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:4px 2px;outline:none;">
+      <span style="font-size:11px;color:rgba(255,255,255,.4);">m</span>
+      <input type="number" id="timerSeconds" min="0" max="59" value="0" style="width:38px;text-align:center;font-size:12px;color:#fff;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:4px 2px;outline:none;">
+      <span style="font-size:11px;color:rgba(255,255,255,.4);">s</span>
+      <button id="timerStartBtn" style="padding:5px 10px;border-radius:6px;font-size:12px;font-weight:600;color:#fff;background:#3b82f6;border:none;cursor:pointer;">▶</button>
+      <button id="timerStopBtn" style="padding:5px 10px;border-radius:6px;font-size:12px;font-weight:600;color:#fff;background:rgba(255,255,255,.15);border:none;cursor:pointer;">■</button>
       <div id="timerDisplay" class="text-sm font-bold text-blue-400 min-w-[40px] text-center" style="display:none;">00:00</div>
     </div>
 
