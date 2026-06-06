@@ -13,11 +13,15 @@ html,body{height:100vh;overflow:hidden;}
 body{display:flex;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sans-serif;color:#1C1C1E;}
 
 .client-mode #controls{display:none;}
-.client-mode #clientArea{flex:1;width:100%;}
+.client-mode #topBar{display:none;}
+.client-mode #mainContent{flex:1;height:100%;}
+.client-mode #zoomSpaceIndicator{display:none;}
+.client-mode #copyrightFooter{display:none !important;}
+.client-mode #clientArea{flex:1;width:100%;height:100%;}
 .client-mode #splash{display:none;}
 .client-mode #clientArea::after{display:none;}
 .client-mode #toolMenu{display:none !important;}
-.client-mode #mainApp{display:flex !important;}
+.client-mode #mainApp{display:flex !important;flex-direction:column;}
 
 #splash{position:fixed;inset:0;z-index:9999;background:#111;display:flex;align-items:center;justify-content:center;transition:opacity .7s ease;}
 #splash.out{opacity:0;pointer-events:none;}
@@ -184,7 +188,10 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;background:#fff;borde
 .tb-num{width:36px;padding:4px 3px;border:1px solid rgba(255,255,255,.16);border-radius:5px;font-size:12px;text-align:center;background:rgba(255,255,255,.07);color:#fff;font-family:inherit;outline:none;}
 
 #topBar .btn-pause{width:auto;height:32px;padding:0 13px;margin-bottom:0;border-radius:7px;font-size:12px;flex-shrink:0;}
-#topBar .btn-pause.running{background:rgba(255,255,255,.14);}
+#topBar .btn-pause.running{background:rgba(255,59,48,.85);}
+#topBar .btn-pause.running:hover{background:rgba(255,59,48,1);}
+#topBar .btn-pause.paused{background:rgba(255,149,0,.9);}
+#topBar .btn-pause.paused:hover{background:rgba(255,149,0,1);}
 #topBar #timerDisplay{font-size:14px;font-weight:700;color:#007AFF;min-width:38px;text-align:center;}
 
 /* Zoom space indicator in canvas */
@@ -890,9 +897,9 @@ function updateRandom(W,H,dt) {
     frameN++;
     if(state.colorChanging) ballHue=(ballHue+0.22*dt)%360;
 
-    // Timer countdown
+    // Timer countdown — dt is frames at 60fps, so divide by 60 for real seconds
     if(state.timerActive && state.timerSeconds>0) {
-      state.timerSeconds-=dt/16.667;
+      state.timerSeconds-=dt/60;
       if(state.timerSeconds<=0) {
         state.timerSeconds=0;
         state.timerActive=false;
