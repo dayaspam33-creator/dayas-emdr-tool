@@ -991,24 +991,19 @@ function updateRandom(W,H,dt) {
 
   // ── Pause / Start ─────────────────────────────────────────────────────────
   const pauseBtn=document.getElementById('pauseBtn');
-  let hasStarted=false;
   function updatePauseBtn(){
-    if(!hasStarted){
-      pauseBtn.textContent='▶  Start';
+    if(state.paused){
+      pauseBtn.textContent='▶  Start';
       pauseBtn.style.background='#34C759';
-    } else if(!state.paused){
-      pauseBtn.textContent='⏸  Pauze';
-      pauseBtn.style.background='rgba(255,59,48,.9)';
     } else {
-      pauseBtn.textContent='▶  Hervat';
-      pauseBtn.style.background='rgba(255,149,0,.95)';
+      pauseBtn.textContent='⏸  Pauze';
+      pauseBtn.style.background='rgba(255,59,48,.9)';
     }
   }
   updatePauseBtn();
   pauseBtn.addEventListener('click',()=>{
     initAudio();
-    if(!hasStarted){hasStarted=true;state.paused=false;}
-    else{state.paused=!state.paused;}
+    state.paused=!state.paused;
     updatePauseBtn();
     sendUpd('paused',state.paused);
   });
