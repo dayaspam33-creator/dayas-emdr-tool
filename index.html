@@ -741,7 +741,6 @@ if (IS_CLIENT) {
     fbFrameN++;
     if(fbFrameN%3===0 && sessionRef) fbSet('frame',{x:Math.round(x)||0,y:Math.round(y)||0,shape});
     requestAnimationFrame(loop);
-  } catch(e) { console.error('loop err',e); requestAnimationFrame(loop); }
   }
   loop();
 
