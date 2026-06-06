@@ -715,29 +715,6 @@ if (IS_CLIENT) {
     showFbReady(code, fbConfig);
   }
 
-  document.getElementById('fbSaveBtn').addEventListener('click', () => {
-    const raw = document.getElementById('fbConfigInput').value.trim();
-    const errEl = document.getElementById('fbError');
-    errEl.style.display = 'none';
-    try {
-      fbConfig = JSON.parse(raw);
-      if (!fbConfig.databaseURL) throw new Error('databaseURL ontbreekt');
-      if (!initFirebase(fbConfig)) throw new Error('Verbinding mislukt');
-      const code = generateCode();
-      localStorage.setItem('emdr_fb_cfg', JSON.stringify(fbConfig));
-      localStorage.setItem('emdr_fb_code', code);
-      setSession(code);
-      showFbReady(code, fbConfig);
-    } catch(e) {
-      errEl.textContent = '⚠ ' + e.message;
-      errEl.style.display = '';
-    }
-  });
-
-  document.getElementById('fbCancelBtn').addEventListener('click', () => {
-    document.getElementById('fbForm').style.display = 'none';
-  });
-
   document.getElementById('copyLinkBtn').addEventListener('click', () => {
     const val = document.getElementById('sessionLinkInput').value;
     navigator.clipboard.writeText(val).then(() => {
