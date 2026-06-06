@@ -441,8 +441,8 @@ function startEMDRTool() {
   if(app) app.style.display = 'flex';
   const footer = document.getElementById('copyrightFooter');
   if(footer) footer.style.display = 'none';
-  // Canvas was 0x0 while mainApp was hidden — force resize
-  setTimeout(()=>{ resizeCanvas(); }, 60);
+  // Canvas was 0x0 while mainApp was hidden — force immediate resize
+  resizeCanvas();
   try { if (!IS_CLIENT && state) sendUpd('gameMode', 'emdr'); } catch(e) {}
 }
 
@@ -490,6 +490,7 @@ function resizeCanvas() {
   canvas.height = clientArea.clientHeight;
 }
 new ResizeObserver(resizeCanvas).observe(clientArea);
+window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
 if (!CanvasRenderingContext2D.prototype.roundRect) {
@@ -921,6 +922,11 @@ function updateRandom(W,H,dt) {
   }
 
   function loop(timestamp) {
+    // Auto-resize if canvas still 0x0 (mainApp was hidden at page load)
+    if(!canvas.width || !canvas.height) {
+      resizeCanvas();
+      if(!x || !y) { x=(canvas.width||800)*0.5; y=(canvas.height||600)*0.5; }
+    }
     const dt=lastTime?Math.min((timestamp-lastTime)/16.667,3):1;
     lastTime=timestamp;
     if(!state.paused) update(dt);
