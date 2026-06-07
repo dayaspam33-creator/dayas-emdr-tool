@@ -130,7 +130,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;background:#fff;borde
 
     <div style="width:1px;height:28px;background:rgba(255,255,255,.15);flex-shrink:0;margin:0 4px;"></div>
 
-    <button id="pauseBtn" style="background:#22c55e;color:#fff;height:36px;padding:0 18px;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;min-width:100px;transition:background .15s;">▶  Start</button>
+    <div id="pauseBtn" onclick="if(typeof state!=='undefined'){state.paused=!state.paused;if(typeof updatePauseBtn==='function')updatePauseBtn();if(typeof sendUpd==='function')sendUpd('paused',state.paused);if(typeof initAudio==='function')initAudio();}" style="background:#22c55e;color:#fff;height:36px;padding:0 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;min-width:100px;display:inline-flex;align-items:center;justify-content:center;user-select:none;box-sizing:border-box;">▶&nbsp;&nbsp;Start</div>
 
     <div style="width:1px;height:28px;background:rgba(255,255,255,.15);flex-shrink:0;margin:0 4px;"></div>
 
@@ -773,7 +773,7 @@ if (IS_CLIENT) {
 
   // ── Pause / Start ──────────────────────────────────────────────────────────
   const pauseBtn=document.getElementById('pauseBtn');
-  function updatePauseBtn(){
+  window.updatePauseBtn=function updatePauseBtn(){
     if(state.paused){
       pauseBtn.textContent='▶  Start';
       pauseBtn.style.background='#22c55e';
@@ -783,12 +783,6 @@ if (IS_CLIENT) {
     }
   }
   updatePauseBtn();
-  pauseBtn.addEventListener('click',()=>{
-    initAudio();
-    state.paused=!state.paused;
-    updatePauseBtn();
-    sendUpd('paused',state.paused);
-  });
 
   // ── Speed ──────────────────────────────────────────────────────────────────
   const speedSlider=document.getElementById('speedSlider');
